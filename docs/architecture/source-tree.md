@@ -65,38 +65,35 @@ objectscript-design-patterns/
 │   │   │   ├── Performance.cls
 │   │   │   └── Documentation.cls
 │   │   │
-│   │   └── Examples/
-│   │       ├── Person.cls
-│   │       ├── Address.cls
-│   │       ├── Order.cls
-│   │       ├── OrderItem.cls
-│   │       └── Demo.cls
+│   │   ├── Examples/
+│   │   │   ├── Person.cls
+│   │   │   ├── Address.cls
+│   │   │   ├── Order.cls
+│   │   │   ├── OrderItem.cls
+│   │   │   └── Demo.cls
+│   │   │
+│   │   └── Test/
+│   │       ├── Unit/
+│   │       │   ├── GoF/
+│   │       │   │   ├── Creational/
+│   │       │   │   ├── Structural/
+│   │       │   │   └── Behavioral/
+│   │       │   └── PoEAA/
+│   │       │       ├── DataSource/
+│   │       │       └── [other categories]/
+│   │       ├── Integration/
+│   │       │   ├── PatternIntegrationTests.cls
+│   │       │   └── RegistryTests.cls
+│   │       ├── Performance/
+│   │       │   ├── BenchmarkSuite.cls
+│   │       │   └── MemoryTests.cls
+│   │       └── Fixtures/
+│   │           ├── TestData.cls
+│   │           └── MockFactory.cls
 │   │
 │   └── includes/
 │       ├── PatternMacros.inc         # Common macros
 │       └── ErrorCodes.inc            # Error code definitions
-│
-├── tests/
-│   ├── Unit/
-│   │   ├── GoF/
-│   │   │   ├── Creational/
-│   │   │   ├── Structural/
-│   │   │   └── Behavioral/
-│   │   └── PoEAA/
-│   │       ├── DataSource/
-│   │       └── [other categories]/
-│   │
-│   ├── Integration/
-│   │   ├── PatternIntegrationTests.cls
-│   │   └── RegistryTests.cls
-│   │
-│   ├── Performance/
-│   │   ├── BenchmarkSuite.cls
-│   │   └── MemoryTests.cls
-│   │
-│   └── Fixtures/
-│       ├── TestData.cls
-│       └── MockFactory.cls
 │
 ├── examples/
 │   ├── basic/
@@ -164,8 +161,8 @@ objectscript-design-patterns/
 
 | Directory | Purpose | Contents |
 |-----------|---------|----------|
-| `/src` | Source code | All pattern implementations and utilities |
-| `/tests` | Test code | Unit, integration, and performance tests |
+| `/src` | Source code | All pattern implementations, utilities, and tests |
+| `/src/Patterns/Test` | Test code | Unit, integration, performance tests, and fixtures |
 | `/examples` | Usage examples | Demonstration code for each pattern |
 | `/docs` | Documentation | Guides, API docs, architecture |
 | `/scripts` | Build scripts | Installation and deployment automation |
@@ -175,8 +172,8 @@ objectscript-design-patterns/
 ### Module Organization Rules
 
 1. **One Pattern Per File** - Each pattern is a single class file
-2. **Test Mirrors Source** - Test structure matches source structure
-3. **Examples Are Standalone** - Each example is self-contained
-4. **Documentation Collocated** - Pattern docs next to implementation
-5. **Shared Code in Utils** - Common functionality in utility classes
-
+2. **Tests Within Source** - Test code organized under `/src/Patterns/Test/` hierarchy
+3. **Test Mirrors Source** - Test structure matches source pattern structure
+4. **Examples Are Standalone** - Each example is self-contained
+5. **Documentation Collocated** - Pattern docs next to implementation
+6. **Shared Code in Utils** - Common functionality in utility classes

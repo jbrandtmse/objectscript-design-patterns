@@ -1,8 +1,8 @@
 {
     "objectscript.conn": {
-      "server": "local",
-      "ns": "HSCUSTOM",
-      "active": true
+        "server": "local",
+        "ns": "HSCUSTOM",
+        "active": true
     },
     "objectscript.export": {
         "folder": "src",

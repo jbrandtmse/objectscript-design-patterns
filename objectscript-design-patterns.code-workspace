@@ -1,10 +1,14 @@
 {
   "folders": [
-    {
-      "name": "ObjectScript Design Patterns",
-      "path": "."
-    }
-  ],
+	{
+		"name": "ObjectScript Design Patterns",
+		"path": "."
+	},
+	{
+		"name": "local:HSCUSTOM",
+		"uri": "isfs://local:hscustom/"
+	}
+],
   "settings": {
     // Workspace-specific settings
     "files.exclude": {
@@ -225,7 +229,20 @@
       "sqlcomputed",
       "sqlfieldname",
       "sqlprocedure"
-    ]
+    ],
+    "objectscript.conn": {
+      "active": false,
+      "label": "PATTERNS",
+      "host": "localhost",
+      "port": 52773,
+      "ns": "PATTERNS",
+      "username": "_SYSTEM",
+      "password": "",
+      "docker-compose": {
+        "service": "iris",
+        "internalPort": 52773
+      }
+    }
   },
   "launch": {
     "version": "0.2.0",
