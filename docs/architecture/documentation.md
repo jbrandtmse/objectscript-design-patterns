@@ -86,6 +86,18 @@ docs/
     └── resources.md
 ```
 
+### Documentation Requirements
+
+All pattern implementations MUST include corresponding documentation that:
+1. Follows the standard pattern documentation template
+2. Is written at a 10th-grade reading level for accessibility
+3. Includes working code examples from the actual implementation
+4. Provides healthcare-specific use cases
+5. References the corresponding test classes
+6. Uses consistent chapter numbering (Chapter01, Chapter02, etc.)
+
+Documentation must be created as part of the implementation story, not as a separate task.
+
 ### Pattern Documentation Template
 
-```markdown
+```markdown
