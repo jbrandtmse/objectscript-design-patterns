@@ -1,0 +1,63 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "objectscript",
+            "request": "launch",
+            "name": "Debug ObjectScript",
+            "program": "${file}",
+            "stopOnEntry": false
+        },
+        {
+            "type": "objectscript",
+            "request": "launch",
+            "name": "Debug Pattern Tests",
+            "program": "##class(%UnitTest.Manager).RunTest(\"Patterns.Test\")",
+            "stopOnEntry": false
+        },
+        {
+            "type": "objectscript",
+            "request": "launch",
+            "name": "Debug Specific Pattern",
+            "program": "${command:AskForPatternClass}",
+            "stopOnEntry": true
+        },
+        {
+            "type": "objectscript",
+            "request": "attach",
+            "name": "Attach to IRIS Process",
+            "processId": "${command:PickProcess}",
+            "port": 9229
+        },
+        {
+            "type": "objectscript",
+            "request": "launch",
+            "name": "Debug Registry Manager",
+            "program": "##class(Patterns.Registry.Manager).Initialize()",
+            "stopOnEntry": false
+        },
+        {
+            "type": "objectscript",
+            "request": "launch",
+            "name": "Debug Example Code",
+            "program": "##class(Patterns.Examples.Demo).Run()",
+            "stopOnEntry": false
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Debug All Tests",
+            "configurations": [
+                "Debug Pattern Tests"
+            ]
+        }
+    ],
+    "inputs": [
+        {
+            "id": "AskForPatternClass",
+            "type": "promptString",
+            "description": "Enter the pattern class to debug (e.g., Patterns.GoF.Creational.Singleton)",
+            "default": "Patterns.GoF.Creational.Singleton"
+        }
+    ]
+}

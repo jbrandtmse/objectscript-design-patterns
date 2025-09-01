@@ -1,0 +1,68 @@
+{
+    "objectscript.conn": {
+      "server": "local",
+      "ns": "HSCUSTOM",
+      "active": true
+    },
+    "objectscript.export": {
+        "folder": "src",
+        "addCategory": false,
+        "map": {
+            "Patterns.GoF.Creational.*": "Patterns/GoF/Creational/",
+            "Patterns.GoF.Structural.*": "Patterns/GoF/Structural/",
+            "Patterns.GoF.Behavioral.*": "Patterns/GoF/Behavioral/",
+            "Patterns.PoEAA.DataSource.*": "Patterns/PoEAA/DataSource/",
+            "Patterns.PoEAA.DomainLogic.*": "Patterns/PoEAA/DomainLogic/",
+            "Patterns.PoEAA.ObjectRelational.*": "Patterns/PoEAA/ObjectRelational/",
+            "Patterns.PoEAA.WebPresentation.*": "Patterns/PoEAA/WebPresentation/",
+            "Patterns.PoEAA.Distribution.*": "Patterns/PoEAA/Distribution/",
+            "Patterns.PoEAA.Offline.*": "Patterns/PoEAA/Offline/",
+            "Patterns.PoEAA.Session.*": "Patterns/PoEAA/Session/",
+            "Patterns.PoEAA.Base.*": "Patterns/PoEAA/Base/",
+            "Patterns.Registry.*": "Patterns/Registry/",
+            "Patterns.Utils.*": "Patterns/Utils/",
+            "Patterns.Examples.*": "Patterns/Examples/"
+        }
+    },
+    "objectscript.format": {
+        "commandCase": "word",
+        "functionCase": "word",
+        "keywords": {
+            "case": "lower"
+        }
+    },
+    "objectscript.showExplorer": true,
+    "objectscript.compileOnSave": true,
+    "objectscript.importOnSave": true,
+    "files.associations": {
+        "*.cls": "objectscript-class",
+        "*.mac": "objectscript",
+        "*.int": "objectscript",
+        "*.inc": "objectscript"
+    },
+    "editor.formatOnSave": false,
+    "editor.formatOnPaste": false,
+    "editor.suggestSelection": "first",
+    "editor.wordWrap": "on",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "**/Thumbs.db": true
+    },
+    "search.exclude": {
+        "**/.git": true,
+        "**/node_modules": true,
+        "**/bower_components": true,
+        "**/dist": true,
+        "**/build": true
+    },
+    "[objectscript-class]": {
+        "editor.rulers": [100, 120]
+    },
+    "[objectscript]": {
+        "editor.rulers": [100, 120]
+    }
+}

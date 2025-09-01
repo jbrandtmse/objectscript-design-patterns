@@ -1,0 +1,411 @@
+{
+  "folders": [
+    {
+      "name": "ObjectScript Design Patterns",
+      "path": "."
+    }
+  ],
+  "settings": {
+    // Workspace-specific settings
+    "files.exclude": {
+      "**/.git": false,
+      "**/.DS_Store": true,
+      "**/node_modules": true,
+      "**/iris.key": true,
+      "**/*.log": true
+    },
+    
+    // Search exclusions
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/bower_components": true,
+      "**/*.code-search": true,
+      "**/iris-temp": true,
+      "**/stream": true
+    },
+    
+    // File associations
+    "files.associations": {
+      "*.cls": "objectscript-class",
+      "*.mac": "objectscript",
+      "*.int": "objectscript",
+      "*.inc": "objectscript"
+    },
+    
+    // Terminal settings
+    "terminal.integrated.env.windows": {
+      "IRIS_NAMESPACE": "PATTERNS"
+    },
+    "terminal.integrated.env.linux": {
+      "IRIS_NAMESPACE": "PATTERNS"
+    },
+    "terminal.integrated.env.osx": {
+      "IRIS_NAMESPACE": "PATTERNS"
+    },
+    
+    // Task automation
+    "task.autoDetect": "on",
+    
+    // Git settings
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "git.enableSmartCommit": true,
+    
+    // Editor settings
+    "editor.formatOnSave": true,
+    "editor.rulers": [80, 120],
+    "editor.wordWrap": "bounded",
+    "editor.wordWrapColumn": 120,
+    
+    // ObjectScript specific
+    "objectscript.conn.active": true,
+    "objectscript.conn.label": "PATTERNS",
+    "objectscript.conn.host": "localhost",
+    "objectscript.conn.port": 52773,
+    "objectscript.conn.ns": "PATTERNS",
+    "objectscript.conn.username": "_SYSTEM",
+    "objectscript.conn.password": "",
+    "objectscript.conn.docker-compose": {
+      "service": "iris",
+      "internalPort": 52773
+    },
+    
+    // Export settings
+    "objectscript.export.folder": "src",
+    "objectscript.export.addCategory": true,
+    "objectscript.export.atelier": true,
+    "objectscript.export.dontExportIfNoChanges": true,
+    "objectscript.export.maxConcurrentConnections": 0,
+    
+    // Compile settings
+    "objectscript.compileOnSave": true,
+    "objectscript.showExplorer": true,
+    "objectscript.suppressCompileMessages": 1,
+    "objectscript.suppressCompileErrorMessages": 0,
+    
+    // Debug settings
+    "objectscript.debug.debugThisMethod": true,
+    "objectscript.format.commandCase": "word",
+    "objectscript.format.functionCase": "word",
+    
+    // Markdown settings
+    "markdown.extension.toc.levels": "2..6",
+    "markdownlint.config": {
+      "MD033": false,
+      "MD041": false
+    },
+    
+    // Todo Tree settings
+    "todo-tree.general.tags": [
+      "TODO",
+      "FIXME",
+      "BUG",
+      "HACK",
+      "NOTE",
+      "PATTERN",
+      "EXAMPLE",
+      "TEST"
+    ],
+    "todo-tree.highlights.defaultHighlight": {
+      "icon": "alert",
+      "type": "text",
+      "foreground": "#fff",
+      "background": "#ff6b6b",
+      "opacity": 100,
+      "iconColour": "#ff6b6b"
+    },
+    "todo-tree.highlights.customHighlight": {
+      "PATTERN": {
+        "icon": "code",
+        "type": "text",
+        "foreground": "#fff",
+        "background": "#4ecdc4",
+        "iconColour": "#4ecdc4"
+      },
+      "EXAMPLE": {
+        "icon": "book",
+        "type": "text", 
+        "foreground": "#fff",
+        "background": "#45b7d1",
+        "iconColour": "#45b7d1"
+      },
+      "TEST": {
+        "icon": "beaker",
+        "type": "text",
+        "foreground": "#fff",
+        "background": "#96ceb4",
+        "iconColour": "#96ceb4"
+      }
+    },
+    
+    // Spell checker settings
+    "cSpell.words": [
+      "ObjectScript",
+      "InterSystems",
+      "IRIS",
+      "ZPM",
+      "cls",
+      "mac",
+      "int",
+      "inc",
+      "POEAA",
+      "GoF",
+      "Creational",
+      "Structural",
+      "Behavioral",
+      "Singleton",
+      "Factory",
+      "Builder",
+      "Prototype",
+      "Adapter",
+      "Bridge",
+      "Composite",
+      "Decorator",
+      "Facade",
+      "Flyweight",
+      "Proxy",
+      "Chain",
+      "Command",
+      "Iterator",
+      "Mediator",
+      "Memento",
+      "Observer",
+      "State",
+      "Strategy",
+      "Template",
+      "Visitor",
+      "Registry",
+      "Repository",
+      "Unit",
+      "Work",
+      "Domain",
+      "Model",
+      "Active",
+      "Record",
+      "Data",
+      "Mapper",
+      "Table",
+      "Gateway",
+      "Row",
+      "Service",
+      "Layer",
+      "Transaction",
+      "Script",
+      "Lazy",
+      "Load",
+      "Identity",
+      "Map",
+      "Metadata",
+      "Mapping",
+      "Query",
+      "Object",
+      "Supertype",
+      "Special",
+      "Case",
+      "Plugin",
+      "Layer",
+      "Distribution",
+      "Offline",
+      "Concurrency",
+      "Session",
+      "UnitTest",
+      "TestCase",
+      "Assert",
+      "namespace",
+      "classmethod",
+      "property",
+      "parameter",
+      "relationship",
+      "index",
+      "trigger",
+      "projection",
+      "xdata",
+      "storage",
+      "sqlcomputecode",
+      "sqlcomputed",
+      "sqlfieldname",
+      "sqlprocedure"
+    ]
+  },
+  "launch": {
+    "version": "0.2.0",
+    "configurations": [
+      {
+        "type": "objectscript",
+        "request": "launch",
+        "name": "Debug ObjectScript (Workspace)",
+        "program": "${file}"
+      },
+      {
+        "type": "objectscript",
+        "request": "launch",
+        "name": "Run Pattern Tests",
+        "program": "##class(%UnitTest.Manager).RunTest(\"Tests\",\"/nodelete\")"
+      }
+    ]
+  },
+  "tasks": {
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "Compile All",
+        "type": "objectscript",
+        "request": "compile",
+        "scope": "workspace"
+      },
+      {
+        "label": "Run All Tests",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "##class(%UnitTest.Manager).RunTest(\"Tests\",\"/nodelete\")"
+        ],
+        "group": {
+          "kind": "test",
+          "isDefault": true
+        },
+        "problemMatcher": []
+      },
+      {
+        "label": "Import All",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "##class(%SYSTEM.OBJ).ImportDir(\"${workspaceFolder}/src\",\"*.cls *.mac *.int *.inc\",\"ck\",,1)"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "Export All",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "##class(%SYSTEM.OBJ).ExportAll(\"${workspaceFolder}/export/all.xml\")"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "Build Documentation",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "##class(Patterns.Documentation.Generator).BuildAll()"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "Clean Build",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "do ##class(%SYSTEM.OBJ).DeleteAll()"
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "ZPM: Load Module",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "zpm \"load ${workspaceFolder}\""
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "ZPM: Test Module",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "zpm \"test objectscript-design-patterns\""
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "ZPM: Package Module",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "zpm \"package objectscript-design-patterns\""
+        ],
+        "problemMatcher": []
+      },
+      {
+        "label": "Generate Pattern Template",
+        "type": "shell",
+        "command": "iris",
+        "args": [
+          "session",
+          "iris",
+          "-U",
+          "PATTERNS",
+          "##class(Patterns.Utils.Generator).CreatePatternTemplate(\"${input:patternName}\",\"${input:patternCategory}\")"
+        ],
+        "problemMatcher": []
+      }
+    ],
+    "inputs": [
+      {
+        "id": "patternName",
+        "type": "promptString",
+        "description": "Enter the pattern name (e.g., Singleton, Factory, Observer)"
+      },
+      {
+        "id": "patternCategory",
+        "type": "pickString",
+        "description": "Select the pattern category",
+        "options": [
+          "Creational",
+          "Structural",
+          "Behavioral",
+          "Enterprise"
+        ]
+      }
+    ]
+  },
+  "extensions": {
+    "recommendations": [
+      "intersystems-community.vscode-objectscript",
+      "intersystems-community.servermanager",
+      "intersystems.language-server",
+      "editorconfig.editorconfig",
+      "streetsidesoftware.code-spell-checker",
+      "eamodio.gitlens",
+      "yzhang.markdown-all-in-one",
+      "davidanson.vscode-markdownlint",
+      "gruntfuggly.todo-tree",
+      "wayou.vscode-todo-highlight"
+    ]
+  }
+}

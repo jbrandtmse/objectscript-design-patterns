@@ -1,0 +1,52 @@
+{
+  "recommendations": [
+    // ObjectScript Development
+    "intersystems-community.vscode-objectscript",
+    "intersystems-community.servermanager",
+    "intersystems.language-server",
+    
+    // Code Quality & Formatting
+    "editorconfig.editorconfig",
+    "streetsidesoftware.code-spell-checker",
+    "dbaeumer.vscode-eslint",
+    
+    // Git & Version Control
+    "eamodio.gitlens",
+    "donjayamanne.githistory",
+    "mhutchie.git-graph",
+    
+    // Documentation
+    "yzhang.markdown-all-in-one",
+    "davidanson.vscode-markdownlint",
+    "bierner.markdown-mermaid",
+    
+    // XML & Configuration
+    "redhat.vscode-xml",
+    "dotjoshjohnson.xml",
+    
+    // Productivity
+    "gruntfuggly.todo-tree",
+    "wayou.vscode-todo-highlight",
+    "alefragnani.bookmarks",
+    "alefragnani.project-manager",
+    
+    // Testing
+    "hbenl.vscode-test-explorer",
+    "littlefoxteam.vscode-python-test-adapter",
+    
+    // Code Navigation
+    "ms-vscode.vscode-typescript-tslint-plugin",
+    "christian-kohler.path-intellisense",
+    "sleistner.vscode-fileutils",
+    
+    // Collaboration
+    "ms-vsliveshare.vsliveshare",
+    "ms-vsliveshare.vsliveshare-pack"
+  ],
+  "unwantedRecommendations": [
+    // Extensions that might conflict with ObjectScript development
+    "ms-python.python",
+    "golang.go",
+    "rust-lang.rust"
+  ]
+}

@@ -1,0 +1,165 @@
+# InterSystems IRIS specific files
+iris.key
+*.log
+*.bak
+*.old
+*.tmp
+*.temp
+.DS_Store
+Thumbs.db
+
+# IRIS Studio and Atelier files
+*.cls.xml
+*.mac.xml
+*.int.xml
+*.inc.xml
+*.gbl.xml
+*.prj.xml
+/studio/
+
+# IRIS Database files
+*.DAT
+IRIS.DAT
+CACHE.DAT
+*.WIJ
+*.lck
+
+# IRIS specific directories
+/mgr/
+/stream/
+/journal/
+/csp/
+/httpd/logs/
+
+# Backup and export files
+*.gof
+*.goform
+*.xml
+*.gz
+*.tar
+*.zip
+/backup/
+/export/
+
+# IDE and Editor files
+.vscode/*
+!.vscode/settings.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/tasks.json
+*.swp
+*.swo
+*~
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Build and dependency directories
+/node_modules/
+/dist/
+/build/
+/out/
+/target/
+
+# Test and coverage reports
+/test-results/
+/coverage/
+*.cover
+*.py,cover
+.coverage
+.coverage.*
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.log
+
+# Documentation build files
+/docs/_build/
+/docs/api/_build/
+*.doctree
+.buildinfo
+
+# OS specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Desktop.ini
+
+# Environment files
+.env
+.env.local
+.env.*.local
+*.env
+
+# Python files (for any utility scripts)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+
+# Package files
+*.jar
+*.war
+*.ear
+*.tar.gz
+*.rar
+
+# Docker files (keep Dockerfile and docker-compose.yml)
+docker/iris.key
+docker/*.DAT
+docker/data/
+docker/durable/
+
+# User-specific files
+*.user
+*.userosscache
+*.sln.docstates
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+
+# Lock files (keep package-lock.json if using npm)
+*.lock
+!package-lock.json
+!yarn.lock
+
+# Private/sensitive data
+/private/
+/secrets/
+/credentials/
+*.pem
+*.key
+*.crt
+*.pfx
+
+# AI/ML model files (if any)
+*.h5
+*.pkl
+*.model
+*.weights
+
+# Debug files
+*.dmp
+*.stackdump
+*.core
+/debug/
+
+# Custom ignore patterns for this project
+/sandbox/
+/temp/
+.ai/
