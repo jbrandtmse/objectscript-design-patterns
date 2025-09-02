@@ -97,6 +97,7 @@ ClassMethod RunTestClass(pClassName As %String) As %Status
 /// Run a simple direct test without any framework overhead
 ClassMethod RunDirectTest() As %Status
 {
+    Set tSC = $$$OK
     Set ^ClineDebug = ""
     Set ^ClineDebug = ^ClineDebug _ "Starting direct test execution; "
     
@@ -127,10 +128,10 @@ ClassMethod RunDirectTest() As %Status
     } Catch ex {
         Set ^ClineDebug = ^ClineDebug _ "Direct test exception: " _ ex.DisplayString() _ "; "
         Write !, "Direct test failed: ", ex.DisplayString()
-        Quit ex.AsStatus()
+        Set tSC = ex.AsStatus()
     }
     
-    Quit $$$OK
+    Quit tSC
 }
 
 /// Run the DirectTest class synchronously

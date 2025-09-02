@@ -94,17 +94,17 @@ Property Settings As %String [ MultiDimensional ];
 
 // ===== CONSTRUCTORS/DESTRUCTORS =====
 
-/// Private constructor - extends parent Singleton constructor
+/// Constructor - extends parent Singleton constructor
 /// Initializes healthcare-specific configuration settings
 /// 
-/// @param initvalue Initial value passed from parent
+/// @param initvalue Optional initialization value
 /// @return Status code
-Method %OnNew(initvalue As %String = "") As %Status [ Private ]
+Method %OnNew(initvalue As %String = "") As %Status
 {
     Set tSC = $$$OK
     
     Try {
-        // Call parent constructor
+        // Call parent constructor with initvalue parameter
         Set tSC = ##super(initvalue)
         If $$$ISERR(tSC) Quit
         
@@ -131,115 +131,9 @@ Method %OnNew(initvalue As %String = "") As %Status [ Private ]
 
 // ===== CLASS METHODS =====
 
-/// Get the singleton instance of ConfigurationManager
-/// Overrides parent GetInstance to return correct type
-/// 
-/// @return The singleton ConfigurationManager instance
-ClassMethod GetInstance() As Patterns.Examples.ConfigurationManager
-{
-    Set tInstance = ""
-    Set tLockName = "^Patterns.Lock(""ConfigurationManager"")"
-    Set tGlobalName = "^Patterns.ConfigurationManager"
-    Set tTimeout = 5
-    
-    Try {
-        // First check - without lock for performance
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                // Verify it's the correct class type
-                If tOref.%IsA("Patterns.Examples.ConfigurationManager") {
-                    Set tOref.AccessCount = tOref.AccessCount + 1
-                    Return tOref
-                }
-            }
-        }
-        
-        // Need to create instance - acquire exclusive lock
-        Lock +@tLockName:tTimeout
-        If '$TEST {
-            Set tError = ##class(%Exception.General).%New("ConfigurationManagerLockTimeout")
-            Set tError.Name = "ConfigurationManagerLockTimeout"
-            Set tError.Code = "Unable to acquire lock for ConfigurationManager creation within " _ tTimeout _ " seconds"
-            Throw tError
-        }
-        
-        // Double-check inside lock
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                If tOref.%IsA("Patterns.Examples.ConfigurationManager") {
-                    Set tOref.AccessCount = tOref.AccessCount + 1
-                    Lock -@tLockName
-                    Return tOref
-                }
-            }
-        }
-        
-        // Create the singleton instance
-        Set tInstance = ..%New()
-        If $ISOBJECT(tInstance) {
-            // Store in global for persistence
-            Set @tGlobalName = tInstance
-            Set tInstance.AccessCount = 1
-        }
-        
-        // Release the lock
-        Lock -@tLockName
-        
-    } Catch ex {
-        // Ensure lock is released
-        Lock -@tLockName
-        
-        // Log the error
-        Do ##class(%SYS.System).WriteToConsoleLog("ConfigurationManager.GetInstance() error: " _ ex.Name _ " - " _ ex.Code)
-        
-        Set tInstance = ""
-    }
-    
-    Return tInstance
-}
+// Note: GetInstance() is inherited from parent Singleton class
 
-/// Reset the configuration manager instance (for testing)
-/// 
-/// @return Status code
-ClassMethod Reset() As %Status
-{
-    Set tSC = $$$OK
-    Set tLockName = "^Patterns.Lock(""ConfigurationManager"")"
-    Set tGlobalName = "^Patterns.ConfigurationManager"
-    Set tTimeout = 5
-    
-    Try {
-        // Acquire exclusive lock
-        Lock +@tLockName:tTimeout
-        If '$TEST {
-            Set tSC = $$$ERROR($$$GeneralError, "Unable to acquire lock for ConfigurationManager reset")
-            Return tSC
-        }
-        
-        // Clear the instance
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                Do tOref.%Close()
-            }
-            Kill @tGlobalName
-        }
-        
-        // Also clear configuration data
-        Kill @..#CONFIGGLOBAL
-        
-        // Release the lock
-        Lock -@tLockName
-        
-    } Catch ex {
-        Lock -@tLockName
-        Set tSC = ex.AsStatus()
-    }
-    
-    Return tSC
-}
+// It will return the correct ConfigurationManager instance due to polymorphic support
 
 // ===== PUBLIC METHODS =====
 
@@ -378,9 +272,9 @@ Method GetSetting(pKey As %String) As %String
             Set tValue = ..ServiceTimeout
         } ElseIf pKey = "OrganizationId" {
             Set tValue = ..OrganizationId
-        } ElseIf $DATA(..Settings(pKey)) {
-            // Check dynamic settings
-            Set tValue = ..Settings(pKey)
+        } ElseIf $DATA(@..#CONFIGGLOBAL@("Settings", pKey)) {
+            // Check dynamic settings directly from global storage
+            Set tValue = @..#CONFIGGLOBAL@("Settings", pKey)
         }
         
     } Catch ex {
@@ -452,7 +346,9 @@ Method SetSetting(pKey As %String, pValue As %String) As %Status
         } ElseIf pKey = "OrganizationId" {
             Set ..OrganizationId = pValue
         } Else {
-            // Store in dynamic settings
+            // Store in dynamic settings - directly to global for persistence
+            Set @..#CONFIGGLOBAL@("Settings", pKey) = pValue
+            // Also update local property for consistency
             Set ..Settings(pKey) = pValue
         }
         

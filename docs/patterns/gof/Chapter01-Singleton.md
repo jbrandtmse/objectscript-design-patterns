@@ -101,6 +101,16 @@ ClassMethod GetInstance() As Patterns.GoF.Creational.Singleton
 
 This is called "double-checked locking" - we check twice to make sure we're thread-safe (multiple processes won't create multiple instances).
 
+**Important ObjectScript Implementation Note**: Due to ObjectScript's architecture, we can't store object references directly in globals. Instead, our actual implementation stores a unique InstanceId in the global `^Patterns.Singleton("InstanceId")` and creates new object references that share this ID. Each call to GetInstance() returns a new object reference, but all references share the same InstanceId. The IsSameInstance() method verifies singleton identity by comparing these IDs:
+
+```objectscript
+Method IsSameInstance(pOther As Patterns.GoF.Creational.Singleton) As %Boolean
+{
+    If '$ISOBJECT(pOther) Return 0
+    Return (..InstanceId = pOther.InstanceId)
+}
+```
+
 ## What Happens When You Use It (Consequences)
 
 ### The Good Parts ✅

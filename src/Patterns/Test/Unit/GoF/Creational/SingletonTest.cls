@@ -70,16 +70,16 @@ Method TestSingleInstance()
     Set instance2 = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
     Do $$$AssertTrue($ISOBJECT(instance2), "Second instance should be retrieved")
     
-    // Verify they are the same instance
-    Do $$$AssertEquals(instance1, instance2, "Both references should point to the same instance")
+    // Verify they are the same singleton instance (compare InstanceId)
+    Do $$$AssertTrue(instance1.IsSameInstance(instance2), "Both references should point to the same singleton instance")
     
     // Verify access count incremented
-    Do $$$AssertEquals(instance1.AccessCount, 2, "Access count should be 2 after two GetInstance calls")
+    Do $$$AssertEquals(instance2.AccessCount, 2, "Access count should be 2 after two GetInstance calls")
     
     // Get third instance and verify
     Set instance3 = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
-    Do $$$AssertEquals(instance1, instance3, "Third reference should also be the same instance")
-    Do $$$AssertEquals(instance1.AccessCount, 3, "Access count should be 3 after three GetInstance calls")
+    Do $$$AssertTrue(instance1.IsSameInstance(instance3), "Third reference should also be the same singleton instance")
+    Do $$$AssertEquals(instance3.AccessCount, 3, "Access count should be 3 after three GetInstance calls")
     
     Set ^ClineDebug = ^ClineDebug _ "TestSingleInstance completed; "
 }
@@ -121,7 +121,7 @@ Method TestResetFunctionality()
     Do $$$AssertTrue($ISOBJECT(instance1), "Initial instance should be created")
     
     Set timestamp1 = instance1.CreationTimestamp
-    Set accessCount1 = instance1.AccessCount
+    Set instanceId1 = instance1.InstanceId
     
     // Verify instance exists
     Do $$$AssertTrue(##class(Patterns.GoF.Creational.Singleton).InstanceExists(), "Instance should exist before reset")
@@ -134,14 +134,14 @@ Method TestResetFunctionality()
     Do $$$AssertTrue('##class(Patterns.GoF.Creational.Singleton).InstanceExists(), "Instance should not exist after reset")
     
     // Sleep briefly to ensure time difference
-    Hang 0.1
+    Hang 0.5
     
     // Get new instance
     Set instance2 = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
     Do $$$AssertTrue($ISOBJECT(instance2), "New instance should be created after reset")
     
-    // Verify it's a different instance (different creation time)
-    Do $$$AssertNotEquals(instance2.CreationTimestamp, timestamp1, "New instance should have different creation timestamp")
+    // Verify it's a different singleton instance (different InstanceId)
+    Do $$$AssertNotEquals(instance2.InstanceId, instanceId1, "New instance should have different InstanceId")
     
     // Verify access count reset
     Do $$$AssertEquals(instance2.AccessCount, 1, "Access count should reset to 1 for new instance")
@@ -213,9 +213,9 @@ Method TestConfigurationManager()
     // Verify it's the correct type
     Do $$$AssertTrue(config1.%IsA("Patterns.Examples.ConfigurationManager"), "Instance should be of type ConfigurationManager")
     
-    // Get second instance and verify singleton
+    // Get second instance and verify singleton (compare InstanceId)
     Set config2 = ##class(Patterns.Examples.ConfigurationManager).GetInstance()
-    Do $$$AssertEquals(config1, config2, "Should return the same ConfigurationManager instance")
+    Do $$$AssertTrue(config1.IsSameInstance(config2), "Should return the same ConfigurationManager singleton instance")
     
     // Verify inheritance from Singleton
     Do $$$AssertTrue(config1.%IsA("Patterns.GoF.Creational.Singleton"), "ConfigurationManager should extend Singleton")

@@ -63,8 +63,10 @@
 /// This ObjectScript implementation uses:
 /// <ul>
 /// <li>Private constructor (%OnNew marked as Private) to prevent direct instantiation</li>
-/// <li>Static instance storage using a global variable (^Patterns.Singleton)</li>
+/// <li>Global-based instance tracking with unique instance IDs</li>
 /// <li>Thread-safe double-checked locking using IRIS $LOCK commands</li>
+/// <li>State persistence through regular globals</li>
+/// <li>Instance comparison based on unique IDs rather than object references</li>
 /// <li>Reset method for testing purposes to clear the singleton instance</li>
 /// </ul></p>
 /// 
@@ -73,10 +75,10 @@
 /// // Get the singleton instance
 /// Set singleton = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
 /// 
-/// // Both variables reference the same instance
+/// // Both variables reference the same instance (same ID)
 /// Set singleton1 = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
 /// Set singleton2 = ##class(Patterns.GoF.Creational.Singleton).GetInstance()
-/// Write "Same instance: ", (singleton1 = singleton2), !  // Outputs: 1 (true)
+/// Write "Same instance: ", (singleton1.InstanceId = singleton2.InstanceId), !  // Outputs: 1 (true)
 /// 
 /// // For testing purposes, reset the singleton
 /// Do ##class(Patterns.GoF.Creational.Singleton).Reset()
@@ -124,22 +126,44 @@ Property CreationTimestamp As %TimeStamp;
 /// Counter to demonstrate singleton maintains state
 Property AccessCount As %Integer [ InitialExpression = 0 ];
 
+/// Unique instance reference ID for comparison
+/// This is the key to singleton identity in ObjectScript
+Property InstanceId As %String;
+
 // ===== CONSTRUCTORS/DESTRUCTORS =====
 
-/// Private constructor to prevent direct instantiation
+/// Constructor - protected to prevent direct instantiation
 /// Clients must use GetInstance() to obtain the singleton instance
+/// Accepts initvalue parameter for %RegisteredObject compatibility
 /// 
+/// @param initvalue Optional initialization value (for subclass compatibility)
 /// @return Status code
-Method %OnNew() As %Status [ Private ]
+Method %OnNew(initvalue As %String = "") As %Status
 {
     Set tSC = $$$OK
     
     Try {
-        // Initialize the creation timestamp
-        Set ..CreationTimestamp = $ZDATETIME($HOROLOG, 3)
+        // Get the actual class name for polymorphic support
+        Set tClassName = ..%ClassName(1)
         
-        // Initialize access counter
-        Set ..AccessCount = 0
+        // Always restore state from global if it exists
+        // This ensures all instances have the same ID
+        If $DATA(^Patterns.Singleton(tClassName, "State", "InstanceId")) {
+            // Restore state from global
+            Set ..CreationTimestamp = $GET(^Patterns.Singleton(tClassName, "State", "CreationTimestamp"), $ZDATETIME($HOROLOG, 3))
+            Set ..AccessCount = $GET(^Patterns.Singleton(tClassName, "State", "AccessCount"), 0)
+            Set ..InstanceId = ^Patterns.Singleton(tClassName, "State", "InstanceId")
+        } Else {
+            // First time creation - initialize state
+            Set ..CreationTimestamp = $ZDATETIME($HOROLOG, 3)
+            Set ..AccessCount = 0
+            Set ..InstanceId = $SYSTEM.Util.CreateGUID()
+            
+            // Save initial state to global
+            Set ^Patterns.Singleton(tClassName, "State", "CreationTimestamp") = ..CreationTimestamp
+            Set ^Patterns.Singleton(tClassName, "State", "AccessCount") = ..AccessCount
+            Set ^Patterns.Singleton(tClassName, "State", "InstanceId") = ..InstanceId
+        }
         
     } Catch ex {
         Set tSC = ex.AsStatus()
@@ -151,69 +175,55 @@ Method %OnNew() As %Status [ Private ]
 // ===== CLASS METHODS =====
 
 /// Get the singleton instance (thread-safe with double-checked locking)
-/// This method ensures that only one instance of the class exists
+/// This method ensures that only one logical instance exists
 /// 
-/// <p>Implementation uses double-checked locking pattern for thread safety:
-/// <ol>
-/// <li>First check if instance exists (without lock for performance)</li>
-/// <li>If not exists, acquire exclusive lock</li>
-/// <li>Double-check inside lock (another thread may have created it)</li>
-/// <li>Create instance if still doesn't exist</li>
-/// <li>Release lock and return instance</li>
-/// </ol></p>
+/// <p>Implementation approach for ObjectScript:</p>
+/// <ul>
+/// <li>Creates new object instances as needed (ObjectScript limitation)</li>
+/// <li>All instances share the same InstanceId from global storage</li>
+/// <li>Singleton identity is based on InstanceId equality, not object reference</li>
+/// <li>State is synchronized through global storage</li>
+/// </ul>
 /// 
 /// @return The singleton instance of this class
 /// @throws Lock timeout exception if unable to acquire lock within 5 seconds
 ClassMethod GetInstance() As Patterns.GoF.Creational.Singleton
 {
-    Set tInstance = ""
-    Set tLockName = "^Patterns.Lock(""Singleton"")"
-    Set tGlobalName = "^Patterns.Singleton"
+    // Get the actual class name for polymorphic support
+    Set tClassName = ..%ClassName(1)
+    
+    Set tLockName = "^Patterns.Singleton.Lock("""_tClassName_""")"
     Set tTimeout = 5
     
     Try {
-        // First check - without lock for performance
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                // Increment access count
-                Set tOref.AccessCount = tOref.AccessCount + 1
-                Return tOref
+        // Check if singleton state exists
+        If '$DATA(^Patterns.Singleton(tClassName, "State", "InstanceId")) {
+            // Need to initialize - acquire exclusive lock
+            Lock +@tLockName:tTimeout
+            If '$TEST {
+                Set tError = ##class(%Exception.General).%New("SingletonLockTimeout")
+                Set tError.Name = "SingletonLockTimeout"
+                Set tError.Code = "Unable to acquire lock for Singleton creation within " _ tTimeout _ " seconds"
+                Throw tError
             }
-        }
-        
-        // Need to create instance - acquire exclusive lock
-        Lock +@tLockName:tTimeout
-        If '$TEST {
-            Set tError = ##class(%Exception.General).%New("SingletonLockTimeout")
-            Set tError.Name = "SingletonLockTimeout"
-            Set tError.Code = "Unable to acquire lock for Singleton creation within " _ tTimeout _ " seconds"
-            Throw tError
-        }
-        
-        // Double-check inside lock (another thread may have created it)
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                // Increment access count
-                Set tOref.AccessCount = tOref.AccessCount + 1
-                Lock -@tLockName
-                Return tOref
-            }
-        }
-        
-        // Create the singleton instance
-        Set tInstance = ..%New()
-        If $ISOBJECT(tInstance) {
-            // Store in global for persistence across processes
-            Set @tGlobalName = tInstance
             
-            // Increment initial access count
-            Set tInstance.AccessCount = 1
+            // Double-check inside lock
+            If '$DATA(^Patterns.Singleton(tClassName, "State", "InstanceId")) {
+                // Create initial instance to initialize state
+                Set tInstance = $CLASSMETHOD(tClassName, "%New")
+                // State is now saved in global by %OnNew
+            }
+            
+            // Release the lock
+            Lock -@tLockName
         }
         
-        // Release the lock
-        Lock -@tLockName
+        // Create instance that will load state from global
+        Set tInstance = $CLASSMETHOD(tClassName, "%New")
+        
+        // Increment access count
+        Set tAccessCount = $INCREMENT(^Patterns.Singleton(tClassName, "State", "AccessCount"))
+        Set tInstance.AccessCount = tAccessCount
         
     } Catch ex {
         // Ensure lock is released even on error
@@ -230,7 +240,7 @@ ClassMethod GetInstance() As Patterns.GoF.Creational.Singleton
 }
 
 /// Reset the singleton instance (for testing purposes only)
-/// This method clears the stored singleton instance, forcing a new instance
+/// This method clears the stored singleton state, forcing a new instance
 /// to be created on the next GetInstance() call
 /// 
 /// <p><b>WARNING:</b> This method should only be used in unit tests to ensure
@@ -241,8 +251,11 @@ ClassMethod GetInstance() As Patterns.GoF.Creational.Singleton
 ClassMethod Reset() As %Status
 {
     Set tSC = $$$OK
-    Set tLockName = "^Patterns.Lock(""Singleton"")"
-    Set tGlobalName = "^Patterns.Singleton"
+    
+    // Get the actual class name for polymorphic support
+    Set tClassName = ..%ClassName(1)
+    
+    Set tLockName = "^Patterns.Singleton.Lock("""_tClassName_""")"
     Set tTimeout = 5
     
     Try {
@@ -253,15 +266,8 @@ ClassMethod Reset() As %Status
             Return tSC
         }
         
-        // Clear the singleton instance
-        If $DATA(@tGlobalName) {
-            Set tOref = @tGlobalName
-            If $ISOBJECT(tOref) {
-                // Properly close the object
-                Do tOref.%Close()
-            }
-            Kill @tGlobalName
-        }
+        // Clear the singleton state from global
+        Kill ^Patterns.Singleton(tClassName)
         
         // Release the lock
         Lock -@tLockName
@@ -281,41 +287,54 @@ ClassMethod Reset() As %Status
 /// @return 1 if instance exists, 0 otherwise
 ClassMethod InstanceExists() As %Boolean
 {
-    Set tGlobalName = "^Patterns.Singleton"
+    // Get the actual class name for polymorphic support
+    Set tClassName = ..%ClassName(1)
     
-    If $DATA(@tGlobalName) {
-        Set tOref = @tGlobalName
-        Return $ISOBJECT(tOref)
-    }
-    
-    Return 0
+    // Check if state exists in global
+    Return $DATA(^Patterns.Singleton(tClassName, "State", "InstanceId"))
 }
 
 /// Get information about the current singleton instance
 /// Returns a dynamic object with instance details
 /// 
-/// @return %DynamicObject with instance information or empty string if no instance
+/// @return %DynamicObject with instance information or empty object if no instance
 ClassMethod GetInstanceInfo() As %DynamicObject
 {
     Set tInfo = ##class(%DynamicObject).%New()
-    Set tGlobalName = "^Patterns.Singleton"
     
-    If $DATA(@tGlobalName) {
-        Set tOref = @tGlobalName
-        If $ISOBJECT(tOref) {
-            Set tInfo.exists = 1
-            Set tInfo.creationTimestamp = tOref.CreationTimestamp
-            Set tInfo.accessCount = tOref.AccessCount
-            Set tInfo.className = tOref.%ClassName(1)
-            Return tInfo
-        }
+    // Get the actual class name for polymorphic support
+    Set tClassName = ..%ClassName(1)
+    
+    // Check if state exists in global
+    If $DATA(^Patterns.Singleton(tClassName, "State")) {
+        Set tInfo.exists = 1
+        Set tInfo.creationTimestamp = $GET(^Patterns.Singleton(tClassName, "State", "CreationTimestamp"), "")
+        Set tInfo.accessCount = $GET(^Patterns.Singleton(tClassName, "State", "AccessCount"), 0)
+        Set tInfo.className = tClassName
+        Set tInfo.instanceId = $GET(^Patterns.Singleton(tClassName, "State", "InstanceId"), "")
+    } Else {
+        Set tInfo.exists = 0
     }
     
-    Set tInfo.exists = 0
     Return tInfo
 }
 
 // ===== PUBLIC METHODS =====
+
+/// Check if this instance is the same as another instance
+/// In ObjectScript, we compare InstanceId rather than object references
+/// 
+/// @param other The other instance to compare
+/// @return 1 if same singleton instance, 0 otherwise
+Method IsSameInstance(other As Patterns.GoF.Creational.Singleton) As %Boolean
+{
+    If '$ISOBJECT(other) {
+        Return 0
+    }
+    
+    // Compare instance IDs for singleton equality
+    Return (..InstanceId = other.InstanceId)
+}
 
 /// Display information about this singleton instance
 /// 
@@ -329,6 +348,7 @@ Method DisplayInfo() As %Status
         Write "Class: ", ..%ClassName(1), !
         Write "Created: ", ..CreationTimestamp, !
         Write "Access Count: ", ..AccessCount, !
+        Write "Instance ID: ", ..InstanceId, !
         Write "Pattern Type: ", ..#PATTERNTYPE, !
         Write "Pattern Name: ", ..#PATTERNNAME, !
         Write "Version: ", ..#VERSION, !

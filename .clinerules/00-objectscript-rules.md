@@ -16,6 +16,35 @@
    - If encountering multiple $$ syntax errors in a file, use write_to_file for full replacement rather than multiple replace_in_file operations
    - %DynamicObject properties witih an underscore in the name must have qoutation marks around them because underscore is the concatination operator: Set request."max_results" = 5
 
+## QUIT Statement Restrictions in Try/Catch Blocks
+   - **CRITICAL**: QUIT with arguments is NOT allowed within Try/Catch blocks (ERROR #1043)
+   - The $QUIT special variable determines if argumented QUIT is required (1) or not (0)
+   - **Solutions for methods that must return values:**
+     1. Initialize return variable before Try block: `Set result = ""`
+     2. Set return value within Try block: `Set result = object`
+     3. Use argumentless QUIT in Try/Catch: `Quit` (no arguments)
+     4. Return the variable after Try/Catch: `Quit result`
+   - **Alternative**: Use RETURN statement instead of QUIT (different semantics)
+   - **Pattern Example:**
+     ```objectscript
+     Method CreateProduct() As Product
+     {
+         Set result = ""  // Initialize return variable
+         Try {
+             Set result = ##class(Product).%New()
+             // More logic...
+             Quit  // Argumentless QUIT
+         }
+         Catch ex {
+             // Error handling...
+             Quit  // Argumentless QUIT
+         }
+         Quit result  // Return the result after Try/Catch
+     }
+     ```
+   - Multiple QUIT statements in a method are allowed, but consistency in argument usage is important
+   - This restriction ensures proper exception handling and control flow in error scenarios
+
 ## When editing files 
    - When replace_in_file fails to resolve typos or syntax errors, use write_to_file for full file replacement
    - Use full file replacement (write_to_file) when multiple syntax corrections are needed to avoid cascading errors
