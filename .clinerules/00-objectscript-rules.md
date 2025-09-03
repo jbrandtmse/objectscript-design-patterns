@@ -6,6 +6,38 @@
    - Do not create classes or properties with '%' or '_'
    - Class parameter names must not contain underscore ('_') characters - use camel case (e.g., "MyParameter") or all caps without underscores (e.g., "MYPARAM" or "MYPARAMETER") instead
 
+## Abstract Methods in ObjectScript
+   - **CRITICAL**: Despite documentation suggesting otherwise, abstract methods MUST have code blocks with curly braces {} - they cannot be truly empty or the class will not compile
+   - **CRITICAL**: Abstract methods must return an appropriate value based on their signature:
+     - Methods returning objects: Use `Quit $$$NULLOREF` or `Quit ""`
+     - Methods returning %Status: Use `Quit $$$OK`
+     - Methods returning %String: Use `Quit ""`
+     - Methods returning %Boolean: Use `Quit 0`
+     - Methods returning %Numeric: Use `Quit 0`
+   - Abstract methods are marked with `[ Abstract ]` keyword after the method signature
+   - While documentation states abstract methods have no executable code, the compiler requires implementation bodies that return values
+   - Subclasses override abstract methods with actual implementations
+   - Example pattern:
+     ```objectscript
+     Method MyAbstractMethod() As %String [ Abstract ]
+     {
+         Quit ""
+     }
+     
+     Method ProcessData() As %Status [ Abstract ]
+     {
+         Quit $$$OK
+     }
+     
+     Method CreateObject() As MyClass [ Abstract ]
+     {
+         Quit $$$NULLOREF
+     }
+     ```
+   - Both instance methods and class methods can be abstract
+   - Classes containing abstract methods cannot be instantiated directly
+   - Concrete subclasses must implement all inherited abstract methods
+
 ## While writting ObjectScript  
    - Return a %Status from methods that produce no return value.  
    - First line: Set tSC = $$$OK  
