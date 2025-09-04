@@ -5,6 +5,7 @@
    - "package" prefix = class prefix  
    - Do not create classes or properties with '%' or '_'
    - Class parameter names must not contain underscore ('_') characters - use camel case (e.g., "MyParameter") or all caps without underscores (e.g., "MYPARAM" or "MYPARAMETER") instead
+   - Compile classes using the compile_objectscript_class or compile_objectscript_package MCP tool.
 
 ## Abstract Methods in ObjectScript
    - **CRITICAL**: Despite documentation suggesting otherwise, abstract methods MUST have code blocks with curly braces {} - they cannot be truly empty or the class will not compile
@@ -116,7 +117,7 @@
    - IMPORTANT: Storage sections of ObjectScript classes should NEVER be edited or added.  The compiler will add/maintain these sections of the class based on properties declared in the class and superclasses.
 
 ## ObjectScript Compiler
-   - ObjectScript is automatically compile when the class file is saved.  Do NOT attempt to compile ObjectScript classes yourself.  
+   - Classes should be compiled using the compile_objectscript_class or compile_objectscript_package mcp tool.
 
 ## Ensemble Architecture Guidance
 - When creating Business Services or Business Operations in Ensemble, ensure method signatures exactly match the InterSystems-defined definitions, for example:
@@ -146,9 +147,7 @@
 
 ## IRIS Environment Details
 - **IRIS is NOT running in Docker** - do not use docker commands
-- **Classes auto-compile when saved** - individual classes compile automatically when saved via write_to_file or replace_in_file
-- **Manual Recompilation**: Only needed for major project changes - ask user to recompile manually when needed
-- **Testing**: Use MCP tools (iris-execute-mcp, caretdev/mcp-server-iris) for testing and execution
+- **Testing**: Use MCP tools (iris-execute-mcp, caretdev/mcp-server-iris) for execution, the iris-execute-mcp has known issues with the unit test functionality.  If you must run unit tests, ask the user to do it for you.
 - **Direct IRIS access**: Available through MCP servers for real-time testing and debugging
 
 ## Research and Knowledge Resources
