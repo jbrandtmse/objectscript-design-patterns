@@ -1,65 +1,57 @@
-/// Healthcare Example - Vital Signs Monitor (Observer Pattern Subject)
+/// VitalSignsMonitor: Concrete medical device for monitoring vital signs
+/// Healthcare example of Bridge Pattern refined abstraction
 /// 
-/// Purpose:
-/// Demonstrates the Observer pattern in a healthcare context where a vital signs
-/// monitor acts as the subject, notifying various observers (nurse station, 
-/// doctor pager, medical records) when vital signs change.
-/// 
-/// Real-World Scenario:
-/// In a hospital ICU, vital signs monitors continuously track patient metrics.
-/// When values change or exceed thresholds, multiple systems need to be notified
-/// simultaneously without tight coupling between systems.
-/// 
-/// @see Patterns.GoF.Behavioral.Observer.Subject
-/// @since 1.0.0
-Class Patterns.Examples.VitalSignsMonitor Extends Patterns.GoF.Behavioral.Observer.Subject
+/// <p>This class represents a vital signs monitor that can track heart rate,
+/// blood pressure, oxygen saturation, and temperature. It can switch between
+/// different communication interfaces at runtime.</p>
+Class Patterns.Examples.VitalSignsMonitor Extends Patterns.Examples.MonitoringDevice
 {
 
-// ===== PARAMETERS =====
+/// Current vital signs readings
+Property VitalSigns As %String [ MultiDimensional ];
 
-Parameter VERSION = "1.0.0";
+/// Alert thresholds
+Property AlertThresholds As %String [ MultiDimensional ];
 
-// ===== PROPERTIES =====
+/// Monitoring frequency in seconds
+Property MonitoringFrequency As %Integer [ InitialExpression = 60 ];
 
-/// Patient identifier
+/// Alert status
+Property AlertActive As %Boolean [ InitialExpression = 0 ];
+
+/// Patient ID being monitored
 Property PatientID As %String;
 
-/// Patient name for display
-Property PatientName As %String;
-
-/// Current heart rate (beats per minute)
-Property HeartRate As %Integer [ InitialExpression = 72 ];
-
-/// Current blood pressure (systolic/diastolic)
-Property BloodPressure As %String [ InitialExpression = "120/80" ];
-
-/// Current temperature (Fahrenheit)
-Property Temperature As %Decimal [ InitialExpression = 98.6 ];
-
-/// Current oxygen saturation (percentage)
-Property OxygenSaturation As %Integer [ InitialExpression = 98 ];
-
-/// Alert level: Normal, Warning, Critical
-Property AlertLevel As %String [ InitialExpression = "Normal" ];
-
-// ===== CONSTRUCTORS =====
-
-/// Initialize monitor with patient information
-Method %OnNew(pPatientID As %String = "", pPatientName As %String = "") As %Status
+/// Constructor - Initialize vital signs monitor
+Method %OnNew(pSerialNumber As %String = "", pPatientID As %String = "") As %Status
 {
-    Set tSC = ##super()
+    // Call parent constructor
+    Set tSC = ##super(pSerialNumber, "VitalSignsMonitor-VSM2000")
     If $$$ISERR(tSC) Quit tSC
     
     Try {
         Set ..PatientID = pPatientID
-        Set ..PatientName = pPatientName
         
-        // Initialize with normal vital signs
-        Set ..HeartRate = 72
-        Set ..BloodPressure = "120/80"
-        Set ..Temperature = 98.6
-        Set ..OxygenSaturation = 98
-        Set ..AlertLevel = "Normal"
+        // Initialize vital signs
+        Set ..VitalSigns("HeartRate") = 0
+        Set ..VitalSigns("SystolicBP") = 0
+        Set ..VitalSigns("DiastolicBP") = 0
+        Set ..VitalSigns("OxygenSaturation") = 0
+        Set ..VitalSigns("Temperature") = 0
+        Set ..VitalSigns("RespiratoryRate") = 0
+        
+        // Set default alert thresholds
+        Set ..AlertThresholds("HeartRate","Min") = 50
+        Set ..AlertThresholds("HeartRate","Max") = 120
+        Set ..AlertThresholds("SystolicBP","Min") = 90
+        Set ..AlertThresholds("SystolicBP","Max") = 140
+        Set ..AlertThresholds("DiastolicBP","Min") = 60
+        Set ..AlertThresholds("DiastolicBP","Max") = 90
+        Set ..AlertThresholds("OxygenSaturation","Min") = 92
+        Set ..AlertThresholds("Temperature","Min") = 35.5
+        Set ..AlertThresholds("Temperature","Max") = 38.5
+        Set ..AlertThresholds("RespiratoryRate","Min") = 12
+        Set ..AlertThresholds("RespiratoryRate","Max") = 20
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -67,64 +59,27 @@ Method %OnNew(pPatientID As %String = "", pPatientName As %String = "") As %Stat
     Quit tSC
 }
 
-// ===== PUBLIC METHODS =====
-
-/// Get current alert level based on vital signs
-Method GetAlertLevel() As %String
-{
-    Set alertLevel = "Normal"
-    
-    // Check heart rate
-    If (..HeartRate < 60) || ((..HeartRate >= 90) && (..HeartRate < 120)) {
-        Set alertLevel = "Warning"
-    }
-    If (..HeartRate < 40) || (..HeartRate >= 120) {
-        Quit "Critical"
-    }
-    
-    // Check temperature
-    If (..Temperature < 97) || ((..Temperature > 100.4) && (..Temperature < 103)) {
-        Set alertLevel = "Warning"
-    }
-    If (..Temperature < 95) || (..Temperature >= 103) {
-        Quit "Critical"
-    }
-    
-    // Check oxygen saturation
-    If ((..OxygenSaturation < 95) && (..OxygenSaturation >= 90)) {
-        Set alertLevel = "Warning"
-    }
-    If (..OxygenSaturation < 90) {
-        Quit "Critical"
-    }
-    
-    // Check for invalid values
-    If (..HeartRate < 0) || (..OxygenSaturation > 100) {
-        Quit "Critical"
-    }
-    
-    Quit alertLevel
-}
-
-/// Update heart rate and check thresholds
-Method UpdateHeartRate(pRate As %Integer) As %Status
+/// Start monitoring vital signs
+Method StartMonitoring() As %Status
 {
     Set tSC = $$$OK
     Try {
-        Set oldRate = ..HeartRate
-        Set ..HeartRate = pRate
+        If '$IsObject(..Interface) {
+            Set tSC = $$$ERROR($$$GeneralError, "No communication interface configured")
+            Quit
+        }
         
-        // Determine alert level
-        Set ..AlertLevel = ..GetAlertLevel()
+        // Connect through interface
+        Set tSC = ..Connect()
+        If $$$ISERR(tSC) Quit
         
-        // Create notification data
-        Set data = "HeartRate|" _ pRate _ "|" _ ..AlertLevel _ "|Previous:" _ oldRate
+        Set ..Status = "Monitoring Active"
         
-        // Update state and notify
-        Set ..State = "HeartRate:" _ pRate _ " BPM"
-        Set tSC = ..Notify(data)
+        // Simulate initial readings
+        Do ..SimulateVitalSigns()
         
-        Write "Monitor: Heart rate updated to ", pRate, " BPM (", ..AlertLevel, ")", !
+        // Send initial data
+        Set tSC = ..TransmitVitalSigns()
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -132,25 +87,21 @@ Method UpdateHeartRate(pRate As %Integer) As %Status
     Quit tSC
 }
 
-/// Update blood pressure and check thresholds
-Method UpdateBloodPressure(pBloodPressure As %String) As %Status
+/// Stop monitoring
+Method StopMonitoring() As %Status
 {
     Set tSC = $$$OK
     Try {
-        Set oldBP = ..BloodPressure
-        Set ..BloodPressure = pBloodPressure
+        Set ..Status = "Monitoring Stopped"
         
-        // Determine alert level
-        Set ..AlertLevel = ..GetAlertLevel()
-        
-        // Create notification data
-        Set data = "BloodPressure|" _ pBloodPressure _ "|" _ ..AlertLevel _ "|Previous:" _ oldBP
-        
-        // Update state and notify
-        Set ..State = "BP:" _ pBloodPressure _ " mmHg"
-        Set tSC = ..Notify(data)
-        
-        Write "Monitor: Blood pressure updated to ", pBloodPressure, " mmHg (", ..AlertLevel, ")", !
+        // Send final readings
+        If $IsObject(..Interface) {
+            Set tSC = ..TransmitVitalSigns()
+            If $$$ISERR(tSC) Quit
+            
+            // Disconnect
+            Set tSC = ..Disconnect()
+        }
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -158,25 +109,42 @@ Method UpdateBloodPressure(pBloodPressure As %String) As %Status
     Quit tSC
 }
 
-/// Update temperature and check thresholds
-Method UpdateTemperature(pTemp As %Decimal) As %Status
+/// Get current vital signs readings
+Method GetCurrentReadings() As %String
+{
+    Set readings = {}
+    Set readings.timestamp = $ZDateTime($Horolog,3)
+    Set readings.patientId = ..PatientID
+    Set readings.heartRate = ..VitalSigns("HeartRate")
+    Set readings.bloodPressure = ..VitalSigns("SystolicBP")_"/"_..VitalSigns("DiastolicBP")
+    Set readings.oxygenSaturation = ..VitalSigns("OxygenSaturation")
+    Set readings.temperature = ..VitalSigns("Temperature")
+    Set readings.respiratoryRate = ..VitalSigns("RespiratoryRate")
+    Set readings.alertActive = ..AlertActive
+    
+    Quit readings.%ToJSON()
+}
+
+/// Update vital sign reading
+Method UpdateVitalSign(pType As %String, pValue As %Numeric) As %Status
 {
     Set tSC = $$$OK
     Try {
-        Set oldTemp = ..Temperature
-        Set ..Temperature = pTemp
+        If pType = "" {
+            Set tSC = $$$ERROR($$$GeneralError, "Vital sign type cannot be empty")
+            Quit
+        }
         
-        // Determine alert level
-        Set ..AlertLevel = ..GetAlertLevel()
+        // Store the reading
+        Set ..VitalSigns(pType) = pValue
         
-        // Create notification data
-        Set data = "Temperature|" _ pTemp _ "|" _ ..AlertLevel _ "|Previous:" _ oldTemp
+        // Check thresholds
+        Do ..CheckAlertThresholds(pType, pValue)
         
-        // Update state and notify
-        Set ..State = "Temp:" _ pTemp _ "°F"
-        Set tSC = ..Notify(data)
-        
-        Write "Monitor: Temperature updated to ", pTemp, "°F (", ..AlertLevel, ")", !
+        // Auto-transmit if monitoring is active
+        If ..Status = "Monitoring Active" {
+            Set tSC = ..TransmitVitalSigns()
+        }
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -184,25 +152,22 @@ Method UpdateTemperature(pTemp As %Decimal) As %Status
     Quit tSC
 }
 
-/// Update oxygen saturation and check thresholds
-Method UpdateOxygenSaturation(pSat As %Integer) As %Status
+/// Set alert threshold
+Method SetAlertThreshold(pType As %String, pLimit As %String, pValue As %Numeric) As %Status
 {
     Set tSC = $$$OK
     Try {
-        Set oldSat = ..OxygenSaturation
-        Set ..OxygenSaturation = pSat
+        If (pType = "") || (pLimit = "") {
+            Set tSC = $$$ERROR($$$GeneralError, "Invalid threshold parameters")
+            Quit
+        }
         
-        // Determine alert level
-        Set ..AlertLevel = ..GetAlertLevel()
+        If (pLimit '= "Min") && (pLimit '= "Max") {
+            Set tSC = $$$ERROR($$$GeneralError, "Limit must be 'Min' or 'Max'")
+            Quit
+        }
         
-        // Create notification data
-        Set data = "OxygenSaturation|" _ pSat _ "|" _ ..AlertLevel _ "|Previous:" _ oldSat
-        
-        // Update state and notify
-        Set ..State = "O2Sat:" _ pSat _ "%"
-        Set tSC = ..Notify(data)
-        
-        Write "Monitor: Oxygen saturation updated to ", pSat, "% (", ..AlertLevel, ")", !
+        Set ..AlertThresholds(pType, pLimit) = pValue
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -210,28 +175,57 @@ Method UpdateOxygenSaturation(pSat As %Integer) As %Status
     Quit tSC
 }
 
-/// Update all vital signs at once
-Method UpdateAllVitals(pHR As %Integer, pBP As %String, pTemp As %Decimal, pO2 As %Integer) As %Status
+/// Private method to check alert thresholds
+Method CheckAlertThresholds(pType As %String, pValue As %Numeric) [ Private ]
+{
+    Set alertTriggered = 0
+    
+    // Check minimum threshold
+    If $Data(..AlertThresholds(pType, "Min")) {
+        If pValue < ..AlertThresholds(pType, "Min") {
+            Set alertTriggered = 1
+        }
+    }
+    
+    // Check maximum threshold
+    If $Data(..AlertThresholds(pType, "Max")) {
+        If pValue > ..AlertThresholds(pType, "Max") {
+            Set alertTriggered = 1
+        }
+    }
+    
+    If alertTriggered {
+        Set ..AlertActive = 1
+        Do ..SendAlert(pType, pValue)
+    }
+}
+
+/// Send alert notification
+Method SendAlert(pType As %String, pValue As %Numeric) [ Private ]
+{
+    If '$IsObject(..Interface) Quit
+    
+    Set alert = {}
+    Set alert.type = "VITAL_SIGN_ALERT"
+    Set alert.severity = "HIGH"
+    Set alert.timestamp = $ZDateTime($Horolog,3)
+    Set alert.patientId = ..PatientID
+    Set alert.vitalSign = pType
+    Set alert.value = pValue
+    Set alert.minThreshold = $Get(..AlertThresholds(pType, "Min"), "N/A")
+    Set alert.maxThreshold = $Get(..AlertThresholds(pType, "Max"), "N/A")
+    Set alert.deviceId = ..SerialNumber
+    
+    Do ..SendData(alert.%ToJSON())
+}
+
+/// Transmit current vital signs
+Method TransmitVitalSigns() As %Status
 {
     Set tSC = $$$OK
     Try {
-        Set ..HeartRate = pHR
-        Set ..BloodPressure = pBP
-        Set ..Temperature = pTemp
-        Set ..OxygenSaturation = pO2
-        
-        // Determine overall alert level
-        Set ..AlertLevel = ..GetAlertLevel()
-        
-        // Create comprehensive notification
-        Set data = "AllVitals|HR:" _ pHR _ "|BP:" _ pBP
-        Set data = data _ "|Temp:" _ pTemp _ "|O2:" _ pO2 _ "|Alert:" _ ..AlertLevel
-        
-        // Update state and notify
-        Set ..State = "Complete vital signs update - Alert: " _ ..AlertLevel
-        Set tSC = ..Notify(data)
-        
-        Write "Monitor: All vital signs updated - Alert Level: ", ..AlertLevel, !
+        Set data = ..GetCurrentReadings()
+        Set tSC = ..SendData(data)
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -239,16 +233,58 @@ Method UpdateAllVitals(pHR As %Integer, pBP As %String, pTemp As %Decimal, pO2 A
     Quit tSC
 }
 
-/// Get current vital signs as formatted string
-Method GetVitalSignsSummary() As %String
+/// Simulate vital signs readings (for testing)
+Method SimulateVitalSigns() [ Private ]
 {
-    Set summary = "Patient: " _ ..PatientName _ " (ID: " _ ..PatientID _ ")"
-    Set summary = summary _ " | HR: " _ ..HeartRate _ " BPM"
-    Set summary = summary _ " | BP: " _ ..BloodPressure
-    Set summary = summary _ " | Temp: " _ ..Temperature _ "°F"
-    Set summary = summary _ " | O2: " _ ..OxygenSaturation _ "%"
-    Set summary = summary _ " | Alert: " _ ..AlertLevel
+    // Generate realistic vital signs
+    Set ..VitalSigns("HeartRate") = 60 + $Random(40)  // 60-100 bpm
+    Set ..VitalSigns("SystolicBP") = 110 + $Random(30)  // 110-140 mmHg
+    Set ..VitalSigns("DiastolicBP") = 70 + $Random(20)  // 70-90 mmHg
+    Set ..VitalSigns("OxygenSaturation") = 95 + $Random(5)  // 95-100%
+    Set ..VitalSigns("Temperature") = 36.5 + ($Random(20) / 10)  // 36.5-38.5°C
+    Set ..VitalSigns("RespiratoryRate") = 12 + $Random(8)  // 12-20 breaths/min
+}
+
+/// Get monitoring summary
+Method GetMonitoringSummary() As %String
+{
+    Set summary = "=== Vital Signs Monitor ==="_$Char(13,10)
+    Set summary = summary_"Patient ID: "_..PatientID_$Char(13,10)
+    Set summary = summary_"Device: "_..GetDeviceInfo()_$Char(13,10)
+    Set summary = summary_"Status: "_..Status_$Char(13,10)
+    Set summary = summary_"Alert Active: "_$Select(..AlertActive:"YES",1:"NO")_$Char(13,10)
+    Set summary = summary_$Char(13,10)_"Current Readings:"_$Char(13,10)
+    Set summary = summary_"  Heart Rate: "_..VitalSigns("HeartRate")_" bpm"_$Char(13,10)
+    Set summary = summary_"  Blood Pressure: "_..VitalSigns("SystolicBP")_"/"_..VitalSigns("DiastolicBP")_" mmHg"_$Char(13,10)
+    Set summary = summary_"  O2 Saturation: "_..VitalSigns("OxygenSaturation")_"%"_$Char(13,10)
+    Set summary = summary_"  Temperature: "_..VitalSigns("Temperature")_"°C"_$Char(13,10)
+    Set summary = summary_"  Respiratory Rate: "_..VitalSigns("RespiratoryRate")_" breaths/min"
+    
     Quit summary
+}
+
+/// Clear all alerts
+Method ClearAlerts() As %Status
+{
+    Set tSC = $$$OK
+    Try {
+        Set ..AlertActive = 0
+        
+        // Send clear notification
+        If $IsObject(..Interface) {
+            Set notification = {}
+            Set notification.type = "ALERT_CLEARED"
+            Set notification.timestamp = $ZDateTime($Horolog,3)
+            Set notification.patientId = ..PatientID
+            Set notification.deviceId = ..SerialNumber
+            
+            Set tSC = ..SendData(notification.%ToJSON())
+        }
+    }
+    Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    Quit tSC
 }
 
 }

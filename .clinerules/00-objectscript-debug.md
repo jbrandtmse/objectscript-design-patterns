@@ -11,4 +11,3 @@ Other things to keep in mind:
 
 * The excute_command tool can only be used with very simple commands.  Instead of creating a complex commands, create a helper class method and use the execute_classmethod tool
 * To debug instance methods, create a temporary class method that calls the instance method. You can use ^ClineDebug within the class method if desired.
-* ObjectScript UnitTest classes can NOT be called directly using the execute_command tool, they have to be run externally in the context of the testing manager, which also can NOT be called by the execute_command tool.  Create Debug class methods instead when trying to use the unit tests to troubleshoot.

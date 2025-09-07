@@ -97,13 +97,6 @@ Set ^ClineDebug = ^ClineDebug _ "Step 1 completed; "
 // Later retrieve with get_global tool
 ```
 
-### Testing with IRIS MCP Tools
-- **CRITICAL BUG**: MCP server has a bug when executing test cases - DO NOT use MCP tools for running tests
-- **WORKAROUND**: Ask user to run tests directly in VS Code instead
-- The MCP tools (queue_unit_tests, poll_unit_tests) may timeout or fail with INVALID OREF errors
-- Use VS Code's ObjectScript extension to run tests through the IDE
-- For debugging, create helper methods but execute them through VS Code, not MCP
-
 ### Best Practices
 1. Keep test methods focused and independent
 2. Use descriptive assertion messages

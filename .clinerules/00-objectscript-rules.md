@@ -147,7 +147,7 @@
 
 ## IRIS Environment Details
 - **IRIS is NOT running in Docker** - do not use docker commands
-- **Testing**: Use MCP tools (iris-execute-mcp, caretdev/mcp-server-iris) for execution, the iris-execute-mcp has known issues with the unit test functionality.  If you must run unit tests, ask the user to do it for you.
+- **Testing**: Use MCP tools (iris-execute-mcp) for execution
 - **Direct IRIS access**: Available through MCP servers for real-time testing and debugging
 
 ## Research and Knowledge Resources
