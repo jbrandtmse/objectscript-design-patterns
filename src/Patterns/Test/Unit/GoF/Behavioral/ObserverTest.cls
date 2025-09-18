@@ -25,7 +25,7 @@ Method %OnNew(initvalue As %String = "") As %Status
 }
 
 /// Test basic Subject attach and detach operations
-Method TestSubjectAttachDetach()
+Method TestSubjectAttachDetach() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -64,10 +64,11 @@ Method TestSubjectAttachDetach()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestSubjectAttachDetach completed without errors")
+    Quit $$$OK
 }
 
 /// Test observer notification mechanism
-Method TestObserverNotification()
+Method TestObserverNotification() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -100,10 +101,11 @@ Method TestObserverNotification()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestObserverNotification completed without errors")
+    Quit $$$OK
 }
 
 /// Test ConcreteObserverB selective notification
-Method TestSelectiveNotification()
+Method TestSelectiveNotification() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -138,10 +140,11 @@ Method TestSelectiveNotification()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestSelectiveNotification completed without errors")
+    Quit $$$OK
 }
 
 /// Test VitalSignsMonitor as Subject
-Method TestVitalSignsMonitor()
+Method TestVitalSignsMonitor() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -180,10 +183,11 @@ Method TestVitalSignsMonitor()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestVitalSignsMonitor completed without errors")
+    Quit $$$OK
 }
 
 /// Test NurseStation observer
-Method TestNurseStation()
+Method TestNurseStation() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -233,10 +237,11 @@ Method TestNurseStation()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestNurseStation completed without errors")
+    Quit $$$OK
 }
 
 /// Test DoctorPager observer
-Method TestDoctorPager()
+Method TestDoctorPager() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -292,10 +297,11 @@ Method TestDoctorPager()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestDoctorPager completed without errors")
+    Quit $$$OK
 }
 
 /// Test MedicalRecord observer
-Method TestMedicalRecord()
+Method TestMedicalRecord() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -361,10 +367,11 @@ Method TestMedicalRecord()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestMedicalRecord completed without errors")
+    Quit $$$OK
 }
 
 /// Test complete healthcare scenario with all observers
-Method TestCompleteHealthcareScenario()
+Method TestCompleteHealthcareScenario() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -436,10 +443,11 @@ Method TestCompleteHealthcareScenario()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestCompleteHealthcareScenario completed without errors")
+    Quit $$$OK
 }
 
 /// Test error handling and edge cases
-Method TestErrorHandling()
+Method TestErrorHandling() As %Status
 {
     Set tSC = $$$OK
     Try {
@@ -481,6 +489,7 @@ Method TestErrorHandling()
         Set tSC = ex.AsStatus()
     }
     Do $$$AssertStatusOK(tSC, "TestErrorHandling completed without errors")
+    Quit $$$OK
 }
 
 }

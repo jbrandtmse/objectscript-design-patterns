@@ -58,7 +58,7 @@ Method OnAfterOneTest() As %Status
 // ===== SINGLETON PATTERN TESTS =====
 
 /// Test 1: Verify single instance creation
-Method TestSingleInstance()
+Method TestSingleInstance() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestSingleInstance started; "
     
@@ -82,10 +82,11 @@ Method TestSingleInstance()
     Do $$$AssertEquals(instance3.AccessCount, 3, "Access count should be 3 after three GetInstance calls")
     
     Set ^ClineDebug = ^ClineDebug _ "TestSingleInstance completed; "
+    Quit $$$OK
 }
 
 /// Test 2: Verify state persistence
-Method TestStatePersistence()
+Method TestStatePersistence() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestStatePersistence started; "
     
@@ -109,10 +110,11 @@ Method TestStatePersistence()
     Do $$$AssertTrue(instance2.AccessCount > 1, "Access count should increment with each access")
     
     Set ^ClineDebug = ^ClineDebug _ "TestStatePersistence completed; "
+    Quit $$$OK
 }
 
 /// Test 3: Test reset functionality
-Method TestResetFunctionality()
+Method TestResetFunctionality() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestResetFunctionality started; "
     
@@ -147,10 +149,11 @@ Method TestResetFunctionality()
     Do $$$AssertEquals(instance2.AccessCount, 1, "Access count should reset to 1 for new instance")
     
     Set ^ClineDebug = ^ClineDebug _ "TestResetFunctionality completed; "
+    Quit $$$OK
 }
 
 /// Test 4: Test instance information retrieval
-Method TestInstanceInfo()
+Method TestInstanceInfo() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestInstanceInfo started; "
     
@@ -176,10 +179,11 @@ Method TestInstanceInfo()
     Do $$$AssertNotEquals(info.creationTimestamp, "", "Creation timestamp should be set")
     
     Set ^ClineDebug = ^ClineDebug _ "TestInstanceInfo completed; "
+    Quit $$$OK
 }
 
 /// Test 5: Test display functionality
-Method TestDisplayMethods()
+Method TestDisplayMethods() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestDisplayMethods started; "
     
@@ -197,12 +201,13 @@ Method TestDisplayMethods()
     Do $$$AssertEquals(instance.%ClassName(1), "Patterns.GoF.Creational.Singleton", "Class name should be correct")
     
     Set ^ClineDebug = ^ClineDebug _ "TestDisplayMethods completed; "
+    Quit $$$OK
 }
 
 // ===== CONFIGURATION MANAGER TESTS =====
 
 /// Test 6: Test ConfigurationManager singleton
-Method TestConfigurationManager()
+Method TestConfigurationManager() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationManager started; "
     
@@ -221,10 +226,11 @@ Method TestConfigurationManager()
     Do $$$AssertTrue(config1.%IsA("Patterns.GoF.Creational.Singleton"), "ConfigurationManager should extend Singleton")
     
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationManager completed; "
+    Quit $$$OK
 }
 
 /// Test 7: Test configuration settings
-Method TestConfigurationSettings()
+Method TestConfigurationSettings() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationSettings started; "
     
@@ -251,10 +257,11 @@ Method TestConfigurationSettings()
     Do $$$AssertEquals(config.GetSetting("CustomProperty"), "TestValue", "Custom property should be retrievable")
     
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationSettings completed; "
+    Quit $$$OK
 }
 
 /// Test 8: Test configuration validation
-Method TestConfigurationValidation()
+Method TestConfigurationValidation() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationValidation started; "
     
@@ -286,10 +293,11 @@ Method TestConfigurationValidation()
     Do $$$AssertStatusNotOK(tSC, "AuditLevel of 5 should fail validation")
     
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationValidation completed; "
+    Quit $$$OK
 }
 
 /// Test 9: Test configuration persistence
-Method TestConfigurationPersistence()
+Method TestConfigurationPersistence() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationPersistence started; "
     
@@ -321,10 +329,11 @@ Method TestConfigurationPersistence()
     Do $$$AssertEquals(config2.GetSetting("CustomSetting"), "PersistTest", "Custom setting should be restored")
     
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationPersistence completed; "
+    Quit $$$OK
 }
 
 /// Test 10: Test configuration display
-Method TestConfigurationDisplay()
+Method TestConfigurationDisplay() As %Status
 {
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationDisplay started; "
     
@@ -347,6 +356,7 @@ Method TestConfigurationDisplay()
     Do $$$AssertNotEquals(config.LastModifiedBy, "", "LastModifiedBy should be set")
     
     Set ^ClineDebug = ^ClineDebug _ "TestConfigurationDisplay completed; "
+    Quit $$$OK
 }
 
 }

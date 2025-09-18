@@ -6,7 +6,7 @@ Imagine you're at a sandwich shop. The person behind the counter doesn't just th
 ## Intent
 The Builder pattern separates the construction of a complex object from its representation, allowing you to create different types of objects using the same construction process. It's especially useful when you need to create objects with many optional parts or when the creation process involves multiple steps that need to be done in a specific order.
 
-**Implementation Location:** `src/Patterns/GoF/Creational/Builder.cls`
+**Implementation Location:** `src/Patterns/GoF/Creational/`
 
 ## When Should You Use It? (Applicability)
 - When creating an object involves many steps that need to be performed in a specific sequence
@@ -44,10 +44,12 @@ Set builder = ##class(LabReportBuilder).%New()
 
 // 2. Director uses builder to construct product
 Set director = ##class(Director).%New()
-Do director.ConstructFullProduct(builder)
+Set report = director.Construct(builder, "full")
+// Constructs with BuildPartA(), BuildPartB(), BuildPartC()
 
-// 3. Get the result
-Set report = builder.GetResult()
+// 3. Or use custom construction steps
+Set stepList = $LISTBUILD("A", "C")  // Skip part B
+Set customReport = director.ConstructWithSteps(builder, stepList)
 ```
 
 ## What Happens When You Use It (Consequences)
@@ -78,26 +80,49 @@ Our healthcare implementation demonstrates building different types of medical r
 ```objectscript
 // Building a Complete Blood Count Lab Report
 Set labBuilder = ##class(LabReportBuilder).%New()
-Set labReport = labBuilder.BuildCBCReport(7.5, 4.8, 14.2)
-                         .SetStatus("Final")
-                         .AddSignature("Dr. Johnson", "Pathologist")
-                         .GetResult()
+// BuildCBCReport creates a complete report with interpretation
+Set labReport = labBuilder.BuildCBCReport(
+    "RPT001",                  // Report ID
+    "P12345",                  // Patient ID  
+    "John Doe",                // Patient Name
+    7.5,                       // WBC (K/uL)
+    4.8,                       // RBC (M/uL)
+    14.2,                      // Hemoglobin (g/dL)
+    42.5,                      // Hematocrit (%)
+    250)                       // Platelets (K/uL)
+// Returns completed report with status "Final" and priority 3 (Routine)
 
 // Building a Chest X-Ray Report
 Set radioBuilder = ##class(RadiologyReportBuilder).%New()
 Set xrayReport = radioBuilder.BuildChestXRayReport(
-                    "Clear", "Normal size", "No abnormalities")
-                            .SetPriority("Routine")
-                            .AddSignature("Dr. Lee", "Radiologist")
-                            .GetResult()
+    "RPT002",                  // Report ID
+    "P12345",                  // Patient ID
+    "Jane Smith",              // Patient Name
+    "Rule out pneumonia",      // Indication
+    "Clear",                   // Lungs finding
+    "Normal size",             // Heart finding
+    "No acute abnormality")    // Bones finding
+// Returns report with impression and metadata (StudyType: XR, BodyPart: CHEST)
 
-// Building a Discharge Summary
+// Building a Medical Discharge Summary
 Set dischargeBuilder = ##class(DischargeReportBuilder).%New()
 Set dischargeSummary = dischargeBuilder.BuildMedicalDischarge(
-                         "Home", "Primary Care in 1 week", 
-                         "Continue current medications")
-                                      .SetStatus("Signed")
-                                      .GetResult()
+    "RPT003",                  // Report ID
+    "P12345",                  // Patient ID
+    "Robert Johnson",          // Patient Name
+    "Pneumonia",               // Admission diagnosis
+    "Resolved pneumonia",      // Discharge diagnosis
+    "Patient responded well to antibiotics")  // Hospital course
+// Includes discharge instructions, follow-up appointments, and metadata
+
+// Alternative: Building CT Scan Report with Contrast
+Set ctReport = radioBuilder.BuildCTScanReport(
+    "RPT004", "P67890", "Alice Brown",
+    "ABDOMEN",                 // Body part
+    "Abdominal pain",          // Indication
+    "No acute findings",       // Findings
+    1)                         // Contrast used (Boolean)
+// Priority set to 2 (Urgent) for CT scans
 ```
 
 Each builder handles the complexity of creating its specific report type while maintaining a consistent interface for common operations like adding signatures and setting status.
@@ -114,6 +139,56 @@ Key test scenarios covered:
 - Healthcare-specific builders (Lab, Radiology, Discharge)
 - Error handling and validation
 - Complex report building with metadata and attachments
+
+## ObjectScript-Specific Features
+
+### Director Template Options
+```objectscript
+// The Director supports three built-in templates:
+Set director = ##class(Director).%New()
+
+// "minimal" - Only builds PartA (essential components)
+Set minimalProduct = director.Construct(builder, "minimal")
+
+// "full" - Builds PartA, PartB, and PartC (complete product)
+Set fullProduct = director.Construct(builder, "full")
+
+// "custom" - Builds PartA and PartC (skips PartB)
+Set customProduct = director.Construct(builder, "custom")
+
+// Get available templates
+Set templates = ##class(Director).GetAvailableTemplates()
+// Returns: $LISTBUILD("minimal", "full", "custom")
+```
+
+### Builder Abstract Methods
+```objectscript
+// Every builder must implement these core methods:
+Method Reset()                    // Clear builder state
+Method BuildPartA()               // Build essential component
+Method BuildPartB()               // Build supplementary component  
+Method BuildPartC()               // Build optional component
+Method GetResult()                // Return constructed product
+Method SetProperty(name, value)  // Set property (for fluent interface)
+Method Validate()                 // Validate construction state
+```
+
+### Healthcare Builder Specializations
+```objectscript
+// LabReportBuilder specific methods
+Method BuildCBCReport(...)           // Complete Blood Count
+Method BuildMetabolicPanelReport(...) // Basic Metabolic Panel
+
+// RadiologyReportBuilder specific methods  
+Method BuildChestXRayReport(...)     // Chest X-Ray
+Method BuildCTScanReport(...)        // CT Scan with contrast option
+Method BuildMRIReport(...)           // MRI with gadolinium option
+
+// DischargeReportBuilder specific methods
+Method BuildMedicalDischarge(...)    // Medical discharge summary
+Method BuildSurgicalDischarge(...)   // Post-surgical discharge
+Method BuildICUDischarge(...)        // ICU transfer summary
+```
 
 ## Summary
 

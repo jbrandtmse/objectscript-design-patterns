@@ -4,7 +4,7 @@ Class Patterns.Test.Unit.GoF.Creational.FactoryMethodTest Extends Patterns.Test.
 {
 
 /// Description: Test abstract factory class cannot be instantiated
-Method TestAbstractFactoryInstantiation()
+Method TestAbstractFactoryInstantiation() As %Status
 {
     Set tSC = $$$OK
     
@@ -18,11 +18,11 @@ Method TestAbstractFactoryInstantiation()
         Do $$$AssertTrue(1, "Abstract factory correctly prevented instantiation")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test ConcreteFactoryA creates ProductA
-Method TestConcreteFactoryACreatesProductA()
+Method TestConcreteFactoryACreatesProductA() As %Status
 {
     Set factory = ##class(Patterns.GoF.Creational.ConcreteFactoryA).%New()
     Do $$$AssertTrue($ISOBJECT(factory), "ConcreteFactoryA created")
@@ -34,11 +34,11 @@ Method TestConcreteFactoryACreatesProductA()
     Set operation = product.Operation()
     Do $$$AssertEquals(operation, "ConcreteProductA Operation", "Correct operation result")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test ConcreteFactoryB creates ProductB
-Method TestConcreteFactoryBCreatesProductB()
+Method TestConcreteFactoryBCreatesProductB() As %Status
 {
     Set factory = ##class(Patterns.GoF.Creational.ConcreteFactoryB).%New()
     Do $$$AssertTrue($ISOBJECT(factory), "ConcreteFactoryB created")
@@ -50,11 +50,11 @@ Method TestConcreteFactoryBCreatesProductB()
     Set operation = product.Operation()
     Do $$$AssertEquals(operation, "ConcreteProductB Operation", "Correct operation result")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test factory method delegation
-Method TestFactoryMethodDelegation()
+Method TestFactoryMethodDelegation() As %Status
 {
     // Test with ConcreteFactoryA
     Set factoryA = ##class(Patterns.GoF.Creational.ConcreteFactoryA).%New()
@@ -69,11 +69,11 @@ Method TestFactoryMethodDelegation()
     // Verify different products
     Do $$$AssertNotEquals(productA.%ClassName(1), productB.%ClassName(1), "Different factories create different products")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test polymorphic behavior of products
-Method TestProductPolymorphism()
+Method TestProductPolymorphism() As %Status
 {
     Set factoryA = ##class(Patterns.GoF.Creational.ConcreteFactoryA).%New()
     Set factoryB = ##class(Patterns.GoF.Creational.ConcreteFactoryB).%New()
@@ -90,11 +90,11 @@ Method TestProductPolymorphism()
     Set opB = productB.Operation()
     Do $$$AssertNotEquals(opA, opB, "Different products have different operations")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test that abstract PatientRecordFactory cannot be instantiated
-Method TestAbstractPatientRecordFactory()
+Method TestAbstractPatientRecordFactory() As %Status
 {
     Try {
         Set factory = ##class(Patterns.Examples.PatientRecordFactory).%New()
@@ -104,11 +104,11 @@ Method TestAbstractPatientRecordFactory()
         Do $$$AssertTrue(1, "Abstract PatientRecordFactory correctly prevented instantiation")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test InpatientRecordFactory creates correct record type
-Method TestInpatientRecordFactory()
+Method TestInpatientRecordFactory() As %Status
 {
     Set factory = ##class(Patterns.Examples.InpatientRecordFactory).%New()
     Do $$$AssertTrue($ISOBJECT(factory), "InpatientRecordFactory created")
@@ -123,11 +123,11 @@ Method TestInpatientRecordFactory()
     Do $$$AssertNotEquals(record.BedNumber, "", "Bed number assigned")
     Do $$$AssertNotEquals(record.AuthorizationCode, "", "Authorization code generated")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test OutpatientRecordFactory creates correct record type
-Method TestOutpatientRecordFactory()
+Method TestOutpatientRecordFactory() As %Status
 {
     Set factory = ##class(Patterns.Examples.OutpatientRecordFactory).%New()
     Do $$$AssertTrue($ISOBJECT(factory), "OutpatientRecordFactory created")
@@ -142,11 +142,11 @@ Method TestOutpatientRecordFactory()
     Do $$$AssertNotEquals(record.Copay, "", "Copay calculated")
     Do $$$AssertNotEquals(record.VisitType, "", "Visit type determined")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test EmergencyRecordFactory creates correct record type
-Method TestEmergencyRecordFactory()
+Method TestEmergencyRecordFactory() As %Status
 {
     Set factory = ##class(Patterns.Examples.EmergencyRecordFactory).%New()
     Do $$$AssertTrue($ISOBJECT(factory), "EmergencyRecordFactory created")
@@ -161,11 +161,11 @@ Method TestEmergencyRecordFactory()
     Do $$$AssertNotEquals(record.ArrivalMode, "", "Arrival mode set")
     Do $$$AssertNotEquals(record.VitalSigns, "", "Vitals recorded")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test polymorphic behavior of patient records
-Method TestPatientRecordPolymorphism()
+Method TestPatientRecordPolymorphism() As %Status
 {
     Set inpatientFactory = ##class(Patterns.Examples.InpatientRecordFactory).%New()
     Set outpatientFactory = ##class(Patterns.Examples.OutpatientRecordFactory).%New()
@@ -185,11 +185,11 @@ Method TestPatientRecordPolymorphism()
     Do $$$AssertEquals(outpatientRecord.RecordType, "OUTPATIENT", "Outpatient type")
     Do $$$AssertEquals(emergencyRecord.RecordType, "EMERGENCY", "Emergency type")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test factory creates multiple unique records
-Method TestFactoryCreatesUniqueRecords()
+Method TestFactoryCreatesUniqueRecords() As %Status
 {
     Set factory = ##class(Patterns.Examples.InpatientRecordFactory).%New()
     
@@ -206,11 +206,11 @@ Method TestFactoryCreatesUniqueRecords()
     Do $$$AssertNotEquals(record1.RecordID, record2.RecordID, "Unique record IDs 1-2")
     Do $$$AssertNotEquals(record2.RecordID, record3.RecordID, "Unique record IDs 2-3")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test factory registry functionality
-Method TestFactoryRegistry()
+Method TestFactoryRegistry() As %Status
 {
     // Clear registry first
     Kill ^PatientRecordRegistry
@@ -235,11 +235,11 @@ Method TestFactoryRegistry()
     // Clean up
     Kill ^PatientRecordRegistry
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test emergency record severity calculation
-Method TestEmergencyRecordSeverity()
+Method TestEmergencyRecordSeverity() As %Status
 {
     Set factory = ##class(Patterns.Examples.EmergencyRecordFactory).%New()
     
@@ -250,11 +250,11 @@ Method TestEmergencyRecordSeverity()
         Do $$$AssertTrue($ListFind($ListBuild("Critical", "Urgent", "Less Urgent", "Non-Urgent"), record.Severity), "Valid severity level: " _ record.Severity)
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test inpatient room and bed assignment
-Method TestInpatientRoomAssignment()
+Method TestInpatientRoomAssignment() As %Status
 {
     Set factory = ##class(Patterns.Examples.InpatientRecordFactory).%New()
     
@@ -270,11 +270,11 @@ Method TestInpatientRoomAssignment()
         Do $$$AssertTrue((($Ascii(record.BedNumber) >= 65) && ($Ascii(record.BedNumber) <= 68)), "Bed is A-D: " _ record.BedNumber)
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test outpatient appointment scheduling
-Method TestOutpatientAppointmentScheduling()
+Method TestOutpatientAppointmentScheduling() As %Status
 {
     Set factory = ##class(Patterns.Examples.OutpatientRecordFactory).%New()
     
@@ -291,11 +291,11 @@ Method TestOutpatientAppointmentScheduling()
     // Verify visit type
     Do $$$AssertTrue($ListFind($ListBuild("Routine Check", "Follow-up", "Consultation", "Specialist Referral", "Preventive Care", "Urgent Care"), record.VisitType), "Valid visit type: " _ record.VisitType)
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test factory error handling
-Method TestFactoryErrorHandling()
+Method TestFactoryErrorHandling() As %Status
 {
     // Test with null factory reference
     Try {
@@ -306,11 +306,11 @@ Method TestFactoryErrorHandling()
         Do $$$AssertTrue(1, "Correctly handled null factory error")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test product abstract class behavior
-Method TestProductAbstractClass()
+Method TestProductAbstractClass() As %Status
 {
     // Try to instantiate abstract Product (should fail)
     Try {
@@ -320,11 +320,11 @@ Method TestProductAbstractClass()
         Do $$$AssertTrue(1, "Abstract Product correctly prevented instantiation")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Description: Test patient record abstract class behavior
-Method TestPatientRecordAbstractClass()
+Method TestPatientRecordAbstractClass() As %Status
 {
     // Try to instantiate abstract PatientRecord (should fail)
     Try {
@@ -334,7 +334,7 @@ Method TestPatientRecordAbstractClass()
         Do $$$AssertTrue(1, "Abstract PatientRecord correctly prevented instantiation")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 }

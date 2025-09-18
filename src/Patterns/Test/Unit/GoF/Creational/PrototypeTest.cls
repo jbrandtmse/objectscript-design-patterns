@@ -15,7 +15,7 @@ Method %OnNew(initvalue As %String = "") As %Status
 }
 
 /// Test basic shallow cloning functionality
-Method TestShallowClone()
+Method TestShallowClone() As %Status
 {
     // Create and configure original prototype
     Set original = ##class(Patterns.GoF.Creational.ConcretePrototype1).%New()
@@ -39,11 +39,11 @@ Method TestShallowClone()
     Do $$$AssertEquals(original.SimpleProperty, "Original", "Original SimpleProperty should be unchanged")
     Do $$$AssertEquals(original.IntegerValue, 42, "Original IntegerValue should be unchanged")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test deep cloning with complex nested objects
-Method TestDeepClone()
+Method TestDeepClone() As %Status
 {
     // Create prototype with nested object
     Set prototype2 = ##class(Patterns.GoF.Creational.ConcretePrototype2).%New()
@@ -88,11 +88,11 @@ Method TestDeepClone()
     Set deepClone.NestedObject.SimpleProperty = "Modified Nested Data"
     Do $$$AssertEquals(prototype2.NestedObject.SimpleProperty, "Nested Data", "Original nested object should be unchanged")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test the Prototype Registry functionality
-Method TestPrototypeRegistry()
+Method TestPrototypeRegistry() As %Status
 {
     // Create registry
     Set registry = ##class(Patterns.GoF.Creational.PrototypeRegistry).%New()
@@ -138,11 +138,11 @@ Method TestPrototypeRegistry()
     Set instanceNull = registry.Create("NonExistent")
     Do $$$AssertTrue('$IsObject(instanceNull), "Should return null for non-existent key")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test healthcare patient record template cloning
-Method TestPatientRecordTemplateCloning()
+Method TestPatientRecordTemplateCloning() As %Status
 {
     // Create standard patient record template
     Set standardTemplate = ##class(Patterns.Examples.StandardPatientRecord).%New()
@@ -166,11 +166,11 @@ Method TestPatientRecordTemplateCloning()
     Do $$$AssertEquals(standardTemplate.PatientID, "", "Template PatientID should remain empty")
     Do $$$AssertEquals(standardTemplate.AttendingPhysician, "", "Template physician should remain empty")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test emergency patient record cloning with triage
-Method TestEmergencyPatientRecordCloning()
+Method TestEmergencyPatientRecordCloning() As %Status
 {
     // Create emergency template
     Set emergencyTemplate = ##class(Patterns.Examples.EmergencyPatientRecord).%New()
@@ -191,11 +191,11 @@ Method TestEmergencyPatientRecordCloning()
     Do $$$AssertEquals(emergencyTemplate.TriageCategory, "Yellow", "Template triage should be default")
     Do $$$AssertEquals(emergencyTemplate.ChiefComplaint, "", "Template complaint should be empty")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test pediatric patient record with special considerations
-Method TestPediatricPatientRecordCloning()
+Method TestPediatricPatientRecordCloning() As %Status
 {
     // Create pediatric template
     Set pediatricTemplate = ##class(Patterns.Examples.PediatricPatientRecord).%New()
@@ -216,11 +216,11 @@ Method TestPediatricPatientRecordCloning()
     // Verify medication dosages calculated
     Do $$$AssertTrue(pediatricPatient.DefaultMedications.Count() > 0, "Should have calculated medications")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test CopyFrom method functionality
-Method TestCopyFromMethod()
+Method TestCopyFromMethod() As %Status
 {
     // Create source prototype
     Set source = ##class(Patterns.GoF.Creational.ConcretePrototype1).%New()
@@ -239,11 +239,11 @@ Method TestCopyFromMethod()
     // Verify objects are different
     Do $$$AssertTrue(target '= source, "Should be different objects")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test handling of null/invalid prototypes
-Method TestErrorHandling()
+Method TestErrorHandling() As %Status
 {
     // Test registry with null prototype
     Set registry = ##class(Patterns.GoF.Creational.PrototypeRegistry).%New()
@@ -259,11 +259,11 @@ Method TestErrorHandling()
     Set tSC = target.CopyFrom("")
     Do $$$AssertStatusNotOK(tSC, "CopyFrom should fail with null source")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test performance comparison between shallow and deep cloning
-Method TestCloningPerformance()
+Method TestCloningPerformance() As %Status
 {
     // Create complex prototype with lots of data
     Set complexProto = ##class(Patterns.GoF.Creational.ConcretePrototype2).%New()
@@ -305,11 +305,11 @@ Method TestCloningPerformance()
     // Note: In practice, shallow clone should be faster than deep clone
     // but we don't assert timing as it can vary by system
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test registry with healthcare templates
-Method TestHealthcareTemplateRegistry()
+Method TestHealthcareTemplateRegistry() As %Status
 {
     // Create registry for patient templates
     Set templateRegistry = ##class(Patterns.GoF.Creational.PrototypeRegistry).%New()
@@ -345,7 +345,7 @@ Method TestHealthcareTemplateRegistry()
     Set patient1b = templateRegistry.Create("STANDARD")
     Do $$$AssertTrue(patient1b '= patient1, "Each create should return new instance")
     
-    Quit
+    Quit $$$OK
 }
 
 }

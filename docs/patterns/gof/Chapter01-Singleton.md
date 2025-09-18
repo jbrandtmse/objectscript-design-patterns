@@ -35,13 +35,17 @@ Here's a simple diagram showing how the Singleton pattern works:
 ┌─────────────────────────────────────┐
 │           Singleton Class           │
 ├─────────────────────────────────────┤
-│ - instance (stored in global)       │
+│ - CreationTimestamp                 │
 │ - AccessCount                       │
-│ - InstanceID                        │
+│ - InstanceId                        │
 ├─────────────────────────────────────┤
 │ + GetInstance() : Singleton         │
-│ + Reset() : void                    │
-│ - %OnNew() : %Status (private)      │
+│ + Reset() : %Status                 │
+│ + InstanceExists() : %Boolean       │
+│ + GetInstanceInfo() : %DynamicObject│
+│ + IsSameInstance() : %Boolean       │
+│ + DisplayInfo() : %Status           │
+│ + %OnNew() : %Status                │
 └─────────────────────────────────────┘
             ▲
             │ extends
@@ -52,11 +56,17 @@ Here's a simple diagram showing how the Singleton pattern works:
 │ + HL7Enabled                        │
 │ + FHIREndpoint                      │
 │ + MaxConnections                    │
+│ + EncryptionEnabled                 │
+│ + AuditLevel                        │
+│ + ServiceTimeout                    │
+│ + OrganizationId                    │
 ├─────────────────────────────────────┤
 │ + LoadConfiguration()               │
 │ + SaveConfiguration()               │
 │ + GetSetting()                      │
 │ + SetSetting()                      │
+│ + ValidateConfiguration()           │
+│ + DisplayConfiguration()            │
 └─────────────────────────────────────┘
 ```
 
@@ -176,11 +186,13 @@ Our test class (`src/Patterns/Test/Unit/GoF/Creational/SingletonTest.cls`) verif
 
 1. **Only one instance exists**:
    ```objectscript
-   Method TestSingleInstance()
+   Method TestSingleInstance() As %Status
    {
        Set instance1 = ##class(Singleton).GetInstance()
        Set instance2 = ##class(Singleton).GetInstance()
-       Do $$$AssertEquals(instance1, instance2, "Same instance returned")
+       // ObjectScript creates new references, but they share same InstanceId
+       Do $$$AssertTrue(instance1.IsSameInstance(instance2), "Same singleton instance")
+       Quit $$$OK
    }
    ```
 

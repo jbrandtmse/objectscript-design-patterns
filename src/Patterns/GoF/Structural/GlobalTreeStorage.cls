@@ -397,11 +397,37 @@ ClassMethod ListSavedTrees() As %ListOfDataTypes
 }
 
 /// <p>
+/// Export tree structure to JSON string from saved global
+/// </p>
+/// <param name="pGlobalName">Name of the global storage</param>
+/// <returns>JSON string representation</returns>
+ClassMethod ExportToJSON(pGlobalName As %String) As %String
+{
+    Set tJSON = ""
+    
+    Try {
+        // Load the tree from global
+        Set tRoot = ..LoadTree(pGlobalName)
+        If '$IsObject(tRoot) {
+            Quit
+        }
+        
+        // Convert to JSON
+        Set tJSON = ..ExportTreeToJSON(tRoot)
+    }
+    Catch ex {
+        Set tJSON = ""
+    }
+    
+    Quit tJSON
+}
+
+/// <p>
 /// Export tree structure to JSON string
 /// </p>
 /// <param name="pRoot">Root component of the tree</param>
 /// <returns>JSON string representation</returns>
-ClassMethod ExportToJSON(pRoot As Patterns.GoF.Structural.Component) As %String
+ClassMethod ExportTreeToJSON(pRoot As Patterns.GoF.Structural.Component) As %String
 {
     Set tJSON = ""
     

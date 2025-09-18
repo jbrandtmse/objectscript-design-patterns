@@ -40,10 +40,10 @@ Method %OnNew() As %Status
     If $$$ISERR(tSC) Quit tSC
     
     // Set WiFi-specific configuration
-    Do ..Configuration.SetAt("wifi.standard", ..WiFiStandard)
-    Do ..Configuration.SetAt("wifi.encryption", ..EncryptionType)
-    Do ..Configuration.SetAt("wifi.frequency", "5GHz")
-    Do ..Configuration.SetAt("wifi.channel", "auto")
+    Set ..Configuration("wifi.standard") = ..WiFiStandard
+    Set ..Configuration("wifi.encryption") = ..EncryptionType
+    Set ..Configuration("wifi.frequency") = "5GHz"
+    Set ..Configuration("wifi.channel") = "auto"
     
     Quit $$$OK
 }
@@ -337,6 +337,12 @@ Method RunDiagnostics() As %String
     }
     
     Quit tDiag
+}
+
+/// Get the interface type
+Method GetInterfaceType() As %String
+{
+    Quit "WiFi"
 }
 
 }

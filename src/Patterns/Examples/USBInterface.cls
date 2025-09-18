@@ -54,9 +54,9 @@ Method %OnNew() As %Status
     )
     
     // Set USB-specific configuration
-    Do ..Configuration.SetAt("usb.version", ..USBVersion)
-    Do ..Configuration.SetAt("usb.class", ..DeviceClass)
-    Do ..Configuration.SetAt("usb.power.mode", "bus-powered")
+    Set ..Configuration("usb.version") = ..USBVersion
+    Set ..Configuration("usb.class") = ..DeviceClass
+    Set ..Configuration("usb.power.mode") = "bus-powered"
     
     Quit $$$OK
 }
@@ -370,6 +370,12 @@ Method CheckPowerRequirements() As %Boolean
     }
     
     Quit (..PowerDraw <= tMaxPower)
+}
+
+/// Get the interface type
+Method GetInterfaceType() As %String
+{
+    Quit "USB"
 }
 
 }

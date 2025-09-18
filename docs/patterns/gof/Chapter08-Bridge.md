@@ -113,34 +113,112 @@ Class Patterns.GoF.Structural.Abstraction Extends %RegisteredObject [ Abstract ]
     /// Reference to the implementor
     Property Implementation As Patterns.GoF.Structural.Implementor;
     
-    /// Set the implementation
+    /// Set the implementation with validation
     Method SetImplementation(pImplementation As Implementor) As %Status
     {
-        Set ..Implementation = pImplementation
-        Quit $$$OK
+        Set tSC = $$$OK
+        Try {
+            If '$IsObject(pImplementation) {
+                Throw ##class(%Exception.StatusException).CreateFromStatus(
+                    $$$ERROR($$$GeneralError, "Implementation object is required"))
+            }
+            
+            Set ..Implementation = pImplementation
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
     }
     
-    /// Operation that uses the implementation
-    Method Operation() As %String
+    /// Abstract operation that uses the implementation
+    Method Operation() As %String [ Abstract ]
     {
-        If '$IsObject(..Implementation) {
-            Quit "No implementation"
+        // Abstract method must have implementation body in ObjectScript
+        Quit ""
+    }
+    
+    /// Check if implementation is set
+    Method HasImplementation() As %Boolean
+    {
+        Quit $IsObject(..Implementation)
+    }
+    
+    /// Get the current implementation class name
+    Method GetImplementationType() As %String
+    {
+        If ..HasImplementation() {
+            Quit ..Implementation.%ClassName(1)
         }
-        Quit "Abstraction: " _ ..Implementation.OperationImpl()
+        Quit ""
     }
 }
 
 /// Refined abstraction
 Class Patterns.GoF.Structural.RefinedAbstraction Extends Abstraction
 {
-    Method ExtendedOperation() As %String
+    Property AdditionalState As %String [ InitialExpression = "Refined" ];
+    
+    /// Implementation of the abstract Operation method
+    Method Operation() As %String
     {
-        If '$IsObject(..Implementation) {
-            Quit "No implementation"
+        Set tResult = ""
+        
+        If ..HasImplementation() {
+            Set tImplResult = ..Implementation.OperationImpl()
+            Set tResult = "RefinedAbstraction: Based on (" _ tImplResult _ ")"
+        } Else {
+            Set tResult = "RefinedAbstraction: No implementation set"
         }
-        Set result = "RefinedAbstraction: Extended -> "
-        Set result = result _ ..Implementation.OperationImpl()
-        Quit result
+        
+        Quit tResult
+    }
+    
+    /// Additional refined operation
+    Method RefinedOperation() As %String
+    {
+        Set tResult = ""
+        
+        If ..HasImplementation() {
+            Set tImplResult1 = ..Implementation.OperationImpl()
+            Set tImplResult2 = ..Implementation.OperationImpl()
+            Set tResult = "RefinedOperation: Combining [" _ tImplResult1 _ "] and [" _ tImplResult2 _ "]"
+            Set tResult = tResult _ " with state: " _ ..AdditionalState
+        } Else {
+            Set tResult = "RefinedOperation: No implementation available"
+        }
+        
+        Quit tResult
+    }
+    
+    /// Extended operation with parameters
+    Method ExtendedOperation(pParameter As %String) As %String
+    {
+        Set tResult = ""
+        
+        If ..HasImplementation() {
+            Set tImplResult = ..Implementation.OperationImpl()
+            Set tResult = "Extended[" _ pParameter _ "]: " _ tImplResult
+        } Else {
+            Set tResult = "ExtendedOperation: No implementation"
+        }
+        
+        Quit tResult
+    }
+    
+    /// Get status information
+    Method GetStatus() As %String
+    {
+        Set tStatus = "RefinedAbstraction Status: "
+        Set tStatus = tStatus _ "State=" _ ..AdditionalState _ ", "
+        
+        If ..HasImplementation() {
+            Set tStatus = tStatus _ "Implementation=" _ ..GetImplementationType()
+        } Else {
+            Set tStatus = tStatus _ "Implementation=None"
+        }
+        
+        Quit tStatus
     }
 }
 ```
@@ -152,73 +230,331 @@ Class Patterns.Examples.MonitoringDevice Extends %RegisteredObject [ Abstract ]
 {
     Property Interface As DeviceInterface;
     Property SerialNumber As %String;
-    Property IsMonitoring As %Boolean;
+    Property ModelName As %String;
+    Property Status As %String [ InitialExpression = "Initialized" ];
+    Property Configuration As %String [ MultiDimensional ];
+    Property IsMonitoring As %Boolean [ InitialExpression = 0 ];
+    
+    /// Constructor - Initialize device with serial number and model
+    Method %OnNew(pSerialNumber As %String = "", pModelName As %String = "") As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            Set ..SerialNumber = $Select(pSerialNumber'="":pSerialNumber,1:"SN-"_$Random(999999))
+            Set ..ModelName = $Select(pModelName'="":pModelName,1:"Generic Monitor")
+            
+            // Initialize configuration
+            Set ..Configuration("PowerMode") = "Normal"
+            Set ..Configuration("SamplingRate") = "1Hz"
+            Set ..Configuration("DataFormat") = "JSON"
+            Set ..Configuration("Encryption") = "Enabled"
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
     
     Method SetInterface(pInterface As DeviceInterface) As %Status
     {
-        If $IsObject(..Interface) {
-            Do ..Interface.Disconnect()
+        Set tSC = $$$OK
+        Try {
+            // Disconnect current interface if exists
+            If $IsObject(..Interface) {
+                Set tSC = ..Interface.Disconnect()
+                If $$$ISERR(tSC) Quit
+            }
+            
+            // Set new interface
+            Set ..Interface = pInterface
+            Set ..Status = "Interface Changed"
+            
+            // Configure the new interface with device info
+            If $IsObject(pInterface) {
+                Set tSC = pInterface.Configure(..SerialNumber, ..ModelName)
+            }
         }
-        Set ..Interface = pInterface
-        Quit $$$OK
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
     }
     
     Method SendData(pData As %String) As %Status
     {
-        If '$IsObject(..Interface) {
-            Quit $$$ERROR($$$GeneralError, "No interface")
+        Set tSC = $$$OK
+        Try {
+            If '$IsObject(..Interface) {
+                Set tSC = $$$ERROR($$$GeneralError, "No communication interface configured")
+                Quit
+            }
+            
+            // Prepare data packet
+            Set packet = {}
+            Set packet.deviceId = ..SerialNumber
+            Set packet.model = ..ModelName
+            Set packet.timestamp = $ZDateTime($Horolog,3)
+            Set packet.data = pData
+            Set packet.encrypted = ..Configuration("Encryption")
+            
+            // Send through interface
+            Set tSC = ..Interface.SendData(packet.%ToJSON())
+            If $$$ISERR(tSC) {
+                Set ..Status = "Transmission Error"
+                Quit
+            }
+            
+            Set ..Status = "Data Sent"
         }
-        Quit ..Interface.SendData(pData)
+        Catch ex {
+            Set tSC = ex.AsStatus()
+            Set ..Status = "Send Failed"
+        }
+        Quit tSC
     }
+    
+    /// Abstract methods
+    Method StartMonitoring() As %Status [ Abstract ] { Quit $$$OK }
+    Method StopMonitoring() As %Status [ Abstract ] { Quit $$$OK }
+    Method GetCurrentReadings() As %String [ Abstract ] { Quit "" }
 }
 
 /// Vital signs monitor implementation
 Class Patterns.Examples.VitalSignsMonitor Extends MonitoringDevice
 {
-    Property HeartRate As %Integer;
-    Property BloodPressure As %String;
+    Property VitalSigns As %String [ MultiDimensional ];
+    Property AlertThresholds As %String [ MultiDimensional ];
+    Property MonitoringFrequency As %Integer [ InitialExpression = 60 ];
+    Property AlertActive As %Boolean [ InitialExpression = 0 ];
+    Property PatientID As %String;
+    Property IsActive As %Boolean [ InitialExpression = 0 ];
+    
+    Method %OnNew(pSerialNumber As %String = "", pPatientID As %String = "") As %Status
+    {
+        // Call parent constructor
+        Set tSC = ##super(pSerialNumber, "VitalSignsMonitor-VSM2000")
+        If $$$ISERR(tSC) Quit tSC
+        
+        Try {
+            Set ..PatientID = pPatientID
+            
+            // Initialize vital signs
+            Set ..VitalSigns("HeartRate") = 0
+            Set ..VitalSigns("SystolicBP") = 0
+            Set ..VitalSigns("DiastolicBP") = 0
+            Set ..VitalSigns("OxygenSaturation") = 0
+            Set ..VitalSigns("Temperature") = 0
+            Set ..VitalSigns("RespiratoryRate") = 0
+            
+            // Set default alert thresholds
+            Set ..AlertThresholds("HeartRate","Min") = 50
+            Set ..AlertThresholds("HeartRate","Max") = 120
+            Set ..AlertThresholds("OxygenSaturation","Min") = 92
+            // ... additional thresholds ...
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
     
     Method StartMonitoring() As %Status
     {
-        Set ..IsMonitoring = 1
-        Do ..Interface.Connect()
-        // Monitor vital signs
-        Quit $$$OK
+        Set tSC = $$$OK
+        Try {
+            If '$IsObject(..Interface) {
+                Set tSC = $$$ERROR($$$GeneralError, "No communication interface configured")
+                Quit
+            }
+            
+            // Connect through interface
+            Set tSC = ..Connect()
+            If $$$ISERR(tSC) Quit
+            
+            Set ..Status = "Monitoring Active"
+            Set ..IsActive = 1
+            
+            // Simulate initial readings
+            Do ..SimulateVitalSigns()
+            
+            // Send initial data
+            Set tSC = ..TransmitVitalSigns()
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
+    
+    Method GetCurrentReadings() As %String
+    {
+        Set readings = {}
+        Set readings.timestamp = $ZDateTime($Horolog,3)
+        Set readings.patientId = ..PatientID
+        Set readings.heartRate = ..VitalSigns("HeartRate")
+        Set readings.bloodPressure = ..VitalSigns("SystolicBP")_"/"_..VitalSigns("DiastolicBP")
+        Set readings.oxygenSaturation = ..VitalSigns("OxygenSaturation")
+        Set readings.temperature = ..VitalSigns("Temperature")
+        Set readings.respiratoryRate = ..VitalSigns("RespiratoryRate")
+        Set readings.alertActive = ..AlertActive
+        
+        Quit readings.%ToJSON()
+    }
+}
+
+/// Abstract DeviceInterface implementor
+Class Patterns.Examples.DeviceInterface Extends %RegisteredObject [ Abstract ]
+{
+    Property IsConnected As %Boolean [ InitialExpression = 0 ];
+    Property InterfaceConfig As %String [ MultiDimensional ];
+    Property Statistics As %String [ MultiDimensional ];
+    
+    Method GetInterfaceType() As %String [ Abstract ] { Quit "" }
+    Method Connect() As %Status [ Abstract ] { Quit $$$OK }
+    Method Disconnect() As %Status [ Abstract ] { Quit $$$OK }
+    Method SendData(pData As %String) As %Status [ Abstract ] { Quit $$$OK }
+    Method ReceiveData(Output pData As %String) As %Status [ Abstract ] { Quit $$$OK }
+    Method TestConnection() As %Status [ Abstract ] { Quit $$$OK }
+    
+    Method Configure(pDeviceSerial As %String, pDeviceModel As %String) As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            Set ..InterfaceConfig("DeviceSerial") = pDeviceSerial
+            Set ..InterfaceConfig("DeviceModel") = pDeviceModel
+            Set ..InterfaceConfig("ConfigTime") = $ZDateTime($Horolog,3)
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
     }
 }
 
 /// Bluetooth communication implementor
 Class Patterns.Examples.BluetoothInterface Extends DeviceInterface
 {
+    Property BluetoothAddress As %String;
+    Property SignalStrength As %Integer;
+    Property Pairing As %String [ MultiDimensional ];
+    
+    Method GetInterfaceType() As %String
+    {
+        Quit "Bluetooth"
+    }
+    
     Method Connect() As %Status
     {
-        // Bluetooth-specific connection
-        Set ..IsConnected = 1
-        Quit $$$OK
+        Set tSC = $$$OK
+        Try {
+            // Bluetooth-specific connection logic
+            Set ..IsConnected = 1
+            Set ..SignalStrength = 80 + $Random(20)
+            // Additional connection logic...
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
     }
     
     Method SendData(pData As %String) As %Status
     {
-        // Send via Bluetooth protocol
-        Quit $$$OK
+        Set tSC = $$$OK
+        Try {
+            If '..IsConnected {
+                Set tSC = $$$ERROR($$$GeneralError, "Bluetooth not connected")
+                Quit
+            }
+            // Bluetooth protocol implementation
+            Do ..UpdateSendStatistics($Length(pData))
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
+}
+
+/// WiFi communication implementor
+Class Patterns.Examples.WiFiInterface Extends DeviceInterface
+{
+    Property SSID As %String;
+    Property SignalQuality As %Integer;
+    
+    Method GetInterfaceType() As %String
+    {
+        Quit "WiFi"
+    }
+    
+    Method Connect() As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            // WiFi-specific connection logic
+            Set ..IsConnected = 1
+            Set ..SignalQuality = 70 + $Random(30)
+            // Additional connection logic...
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
+}
+
+/// USB communication implementor
+Class Patterns.Examples.USBInterface Extends DeviceInterface
+{
+    Property USBPort As %String;
+    Property USBSpeed As %String;
+    
+    Method GetInterfaceType() As %String
+    {
+        Quit "USB"
+    }
+    
+    Method Connect() As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            // USB-specific connection logic
+            Set ..IsConnected = 1
+            Set ..USBSpeed = "USB 3.0"
+            // Additional connection logic...
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
     }
 }
 ```
 
 ### Usage Example
 ```objectscript
-// Create monitoring device
-Set monitor = ##class(VitalSignsMonitor).%New()
+// Create monitoring device with patient ID
+Set monitor = ##class(VitalSignsMonitor).%New("", "PATIENT-001")
 
 // Use Bluetooth initially
 Set bluetooth = ##class(BluetoothInterface).%New()
-Do monitor.SetInterface(bluetooth)
-Do monitor.StartMonitoring()
+Set tSC = monitor.SetInterface(bluetooth)
+If $$$ISOK(tSC) {
+    Set tSC = monitor.StartMonitoring()
+}
+
+// Get current readings
+Write monitor.GetCurrentReadings(), !
 
 // Switch to WiFi at runtime
 Set wifi = ##class(WiFiInterface).%New()
-Do monitor.SetInterface(wifi)
-Do monitor.SendData("Vital signs data")
+Set tSC = monitor.SetInterface(wifi)
+
+// Send updated data through new interface
+Set tSC = monitor.TransmitVitalSigns()
+
+// Stop monitoring when done
+Set tSC = monitor.StopMonitoring()
 ```
 
 ## Known Uses

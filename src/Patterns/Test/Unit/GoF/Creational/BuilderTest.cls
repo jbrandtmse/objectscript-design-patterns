@@ -6,7 +6,7 @@ Class Patterns.Test.Unit.GoF.Creational.BuilderTest Extends Patterns.Test.TestCa
 {
 
 /// Test basic builder functionality with Product1
-Method TestConcreteBuilder1BasicConstruction()
+Method TestConcreteBuilder1BasicConstruction() As %Status
 {
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder1).%New()
     Do $$$AssertTrue($ISOBJECT(tBuilder), "ConcreteBuilder1 created successfully")
@@ -21,10 +21,12 @@ Method TestConcreteBuilder1BasicConstruction()
     Do $$$AssertEquals(tProduct.%ClassName(1), "Patterns.GoF.Creational.Product1", "Correct product type")
     Do $$$AssertEquals(tProduct.PartA, "Part A from ConcreteBuilder1", "PartA built correctly")
     Do $$$AssertEquals(tProduct.PartB, "Part B from ConcreteBuilder1", "PartB built correctly")
+    
+    Quit $$$OK
 }
 
 /// Test fluent interface with ConcreteBuilder1
-Method TestFluentInterface()
+Method TestFluentInterface() As %Status
 {
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder1).%New()
     
@@ -41,10 +43,12 @@ Method TestFluentInterface()
     Do $$$AssertEquals(tProduct.Name, "Fluent Product", "Name set via fluent interface")
     Do $$$AssertEquals(tProduct.Version, "2.0", "Version set via fluent interface")
     Do $$$AssertTrue(tProduct.IsComplete(), "Product is complete")
+    
+    Quit $$$OK
 }
 
 /// Test ConcreteBuilder2 with Product2
-Method TestConcreteBuilder2Construction()
+Method TestConcreteBuilder2Construction() As %Status
 {
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder2).%New()
     Do $$$AssertTrue($ISOBJECT(tBuilder), "ConcreteBuilder2 created successfully")
@@ -63,10 +67,12 @@ Method TestConcreteBuilder2Construction()
     Do $$$AssertEquals(tProduct.Category, "Test Category", "Category set correctly")
     Do $$$AssertTrue(tProduct.HasComponent("Component A from ConcreteBuilder2"), "Has Component A")
     Do $$$AssertTrue(tProduct.HasComponent("Component B from ConcreteBuilder2"), "Has Component B")
+    
+    Quit $$$OK
 }
 
 /// Test Director with different builders
-Method TestDirectorWithBuilders()
+Method TestDirectorWithBuilders() As %Status
 {
     Set tDirector = ##class(Patterns.GoF.Creational.Director).%New()
     Do $$$AssertTrue($ISOBJECT(tDirector), "Director created successfully")
@@ -84,10 +90,12 @@ Method TestDirectorWithBuilders()
     Do $$$AssertTrue(tProduct2.HasComponent("Component A from ConcreteBuilder2"), "Full build has Component A")
     Do $$$AssertTrue(tProduct2.HasComponent("Component B from ConcreteBuilder2"), "Full build has Component B")
     Do $$$AssertTrue(tProduct2.HasComponent("Component C from ConcreteBuilder2"), "Full build has Component C")
+    
+    Quit $$$OK
 }
 
 /// Test builder reset and reuse
-Method TestBuilderResetAndReuse()
+Method TestBuilderResetAndReuse() As %Status
 {
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder1).%New()
     
@@ -104,10 +112,12 @@ Method TestBuilderResetAndReuse()
     Set tProduct2 = tBuilder.GetResult()
     Do $$$AssertEquals(tProduct2.Name, "Product 2", "Second product name correct")
     Do $$$AssertEquals(tProduct2.PartA, "", "Second product PartA empty (builder was reset)")
+    
+    Quit $$$OK
 }
 
 /// Test healthcare LabReportBuilder
-Method TestLabReportBuilder()
+Method TestLabReportBuilder() As %Status
 {
     Set tBuilder = ##class(Patterns.Examples.LabReportBuilder).%New()
     Do $$$AssertTrue($ISOBJECT(tBuilder), "LabReportBuilder created successfully")
@@ -122,10 +132,12 @@ Method TestLabReportBuilder()
     Do $$$AssertTrue(tReport.Findings [ "WBC: 7.5", "WBC value in findings")
     Do $$$AssertTrue(tReport.IsComplete(), "Lab report is complete")
     Do $$$AssertEquals(tReport.Priority, 3, "Routine priority set")
+    
+    Quit $$$OK
 }
 
 /// Test healthcare RadiologyReportBuilder
-Method TestRadiologyReportBuilder()
+Method TestRadiologyReportBuilder() As %Status
 {
     Set tBuilder = ##class(Patterns.Examples.RadiologyReportBuilder).%New()
     Do $$$AssertTrue($ISOBJECT(tBuilder), "RadiologyReportBuilder created successfully")
@@ -139,10 +151,12 @@ Method TestRadiologyReportBuilder()
     Do $$$AssertTrue(tReport.ClinicalHistory [ "Chest pain", "Indication in history")
     Do $$$AssertTrue(tReport.Interpretation [ "No acute cardiopulmonary process", "Normal impression")
     Do $$$AssertTrue(tReport.IsComplete(), "Radiology report is complete")
+    
+    Quit $$$OK
 }
 
 /// Test healthcare DischargeReportBuilder
-Method TestDischargeReportBuilder()
+Method TestDischargeReportBuilder() As %Status
 {
     Set tBuilder = ##class(Patterns.Examples.DischargeReportBuilder).%New()
     Do $$$AssertTrue($ISOBJECT(tBuilder), "DischargeReportBuilder created successfully")
@@ -159,10 +173,12 @@ Method TestDischargeReportBuilder()
     Do $$$AssertTrue(tReport.Interpretation [ "Resolved pneumonia", "Discharge diagnosis")
     Do $$$AssertTrue(tReport.IsComplete(), "Discharge summary is complete")
     Do $$$AssertEquals(tReport.Priority, 2, "Discharge summaries have urgent priority")
+    
+    Quit $$$OK
 }
 
 /// Test fluent interface with medical report builders
-Method TestMedicalReportFluentInterface()
+Method TestMedicalReportFluentInterface() As %Status
 {
     Set tBuilder = ##class(Patterns.Examples.LabReportBuilder).%New()
     
@@ -183,10 +199,12 @@ Method TestMedicalReportFluentInterface()
     Do $$$AssertEquals(tReport.ReportId, "LAB-002", "Report ID correct")
     Do $$$AssertEquals(tReport.Status, "Final", "Report status correct")
     Do $$$AssertTrue(tReport.IsComplete(), "Report is complete")
+    
+    Quit $$$OK
 }
 
 /// Test building complex reports with metadata and attachments
-Method TestComplexReportBuilding()
+Method TestComplexReportBuilding() As %Status
 {
     Set tBuilder = ##class(Patterns.Examples.RadiologyReportBuilder).%New()
     
@@ -203,10 +221,12 @@ Method TestComplexReportBuilding()
     
     // Check signatures (should have resident and attending)
     Do $$$AssertTrue(tReport.Signatures.Count() >= 2, "Multiple signatures present")
+    
+    Quit $$$OK
 }
 
 /// Test Director with custom construction sequence
-Method TestDirectorCustomConstruction()
+Method TestDirectorCustomConstruction() As %Status
 {
     Set tDirector = ##class(Patterns.GoF.Creational.Director).%New()
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder2).%New()
@@ -219,10 +239,12 @@ Method TestDirectorCustomConstruction()
     Do $$$AssertTrue(tProduct.HasComponent("Component A from ConcreteBuilder2"), "Has Component A")
     Do $$$AssertTrue(tProduct.HasComponent("Component B from ConcreteBuilder2"), "Has Component B")
     Do $$$AssertTrue(tProduct.HasComponent("Component C from ConcreteBuilder2"), "Has Component C")
+    
+    Quit $$$OK
 }
 
 /// Test error handling in builders
-Method TestBuilderErrorHandling()
+Method TestBuilderErrorHandling() As %Status
 {
     // Test with LabReportBuilder (concrete class)
     Set tLabBuilder = ##class(Patterns.Examples.LabReportBuilder).%New()
@@ -242,10 +264,12 @@ Method TestBuilderErrorHandling()
     Set tReport = tLabBuilder.GetResult()
     Do $$$AssertTrue($ISOBJECT(tReport), "Report created with minimum required fields")
     Do $$$AssertTrue(tReport.IsComplete(), "Minimum report is complete")
+    
+    Quit $$$OK
 }
 
 /// Test specialized builder methods
-Method TestSpecializedBuilderMethods()
+Method TestSpecializedBuilderMethods() As %Status
 {
     // Test ConcreteBuilder2's BuildSpecialized method
     Set tBuilder = ##class(Patterns.GoF.Creational.ConcreteBuilder2).%New()
@@ -265,6 +289,8 @@ Method TestSpecializedBuilderMethods()
     Do $$$AssertTrue($ISOBJECT(tSurgicalReport), "Surgical discharge created")
     Do $$$AssertEquals(tSurgicalReport.ReportType, "Surgical Discharge Summary", "Correct surgical report type")
     Do $$$AssertEquals(tSurgicalReport.Priority, 1, "Surgical discharges have STAT priority")
+    
+    Quit $$$OK
 }
 
 }

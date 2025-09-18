@@ -3,7 +3,7 @@ Class Patterns.Test.Unit.GoF.Structural.AdapterTest Extends Patterns.Test.TestCa
 {
 
 /// Test ClassAdapter request delegation
-Method TestClassAdapter()
+Method TestClassAdapter() As %Status
 {
     Set tSC = $$$OK
     
@@ -18,11 +18,11 @@ Method TestClassAdapter()
     // Test ProcessWithOptions method - only pass one parameter as method expects
     Set tOptionsResult = tAdapter.ProcessWithOptions("test")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test ObjectAdapter with different adaptee instances
-Method TestObjectAdapter()
+Method TestObjectAdapter() As %Status
 {
     Set tSC = $$$OK
     
@@ -41,11 +41,11 @@ Method TestObjectAdapter()
     Set tResult2 = tAdapter2.Request()
     Do $$$AssertTrue(tResult2 [ "Object Adapted:", "ObjectAdapter should work with different adaptee types")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test adapter with null adaptee handling
-Method TestNullAdapteeHandling()
+Method TestNullAdapteeHandling() As %Status
 {
     Set tSC = $$$OK
     
@@ -68,11 +68,11 @@ Method TestNullAdapteeHandling()
     Set tResult3 = tAdapter.Request()
     Do $$$AssertTrue(tResult3 [ "Object Adapted:", "ObjectAdapter should work after setting adaptee")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test legacy code wrapper functionality
-Method TestLegacyCodeWrapper()
+Method TestLegacyCodeWrapper() As %Status
 {
     Set tSC = $$$OK
     
@@ -94,11 +94,11 @@ Method TestLegacyCodeWrapper()
     Set tOpResult = tAdapter.ExecuteLegacyOperation("READ")
     Do $$$AssertTrue(tOpResult [ "Modern Operation:", "Operation should be modernized")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test runtime adapter configuration
-Method TestRuntimeConfiguration()
+Method TestRuntimeConfiguration() As %Status
 {
     Set tSC = $$$OK
     
@@ -117,11 +117,11 @@ Method TestRuntimeConfiguration()
     Set tResult2 = tAdapter.Request()
     Do $$$AssertTrue(tResult2 [ "Object Adapted:", "Adapter should switch adaptees at runtime")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test HL7 to FHIR conversion accuracy - Patient
-Method TestHL7ToFHIRPatientConversion()
+Method TestHL7ToFHIRPatientConversion() As %Status
 {
     Set tSC = $$$OK
     
@@ -155,11 +155,11 @@ Method TestHL7ToFHIRPatientConversion()
     Do $$$AssertTrue($ISOBJECT(tJSON.identifier), "JSON should have identifier array")
     Do $$$AssertEquals(tJSON.identifier.%Get(0).value, "123456789", "JSON identifier should contain MRN")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test HL7 to FHIR conversion accuracy - Observations
-Method TestHL7ToFHIRObservationConversion()
+Method TestHL7ToFHIRObservationConversion() As %Status
 {
     Set tSC = $$$OK
     
@@ -190,11 +190,11 @@ Method TestHL7ToFHIRObservationConversion()
     Do $$$AssertEquals(tObs1.ValueUnit, "mg/dL", "Unit should be extracted")
     Do $$$AssertEquals(tObs1.Interpretation, "H", "Interpretation should be extracted")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test adapter chaining and composition
-Method TestAdapterChaining()
+Method TestAdapterChaining() As %Status
 {
     Set tSC = $$$OK
     
@@ -208,11 +208,11 @@ Method TestAdapterChaining()
     Set tResult = tFirstAdapter.Request()
     Do $$$AssertTrue(tResult [ "Object Adapted:", "First adapter should work correctly")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test FHIR Bundle generation
-Method TestFHIRBundleGeneration()
+Method TestFHIRBundleGeneration() As %Status
 {
     Set tSC = $$$OK
     
@@ -243,11 +243,11 @@ Method TestFHIRBundleGeneration()
         Do $$$AssertEquals(tSecondEntry.resource.resourceType, "Observation", "Second entry should be Observation")
     }
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test error handling in adapters
-Method TestAdapterErrorHandling()
+Method TestAdapterErrorHandling() As %Status
 {
     Set tSC = $$$OK
     
@@ -273,11 +273,11 @@ Method TestAdapterErrorHandling()
     Set tResources2 = tAdapter2.FHIRResources
     Do $$$AssertEquals(tResources2.Count(), 0, "Empty message should produce no resources")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Performance test for adapter operations
-Method TestAdapterPerformance()
+Method TestAdapterPerformance() As %Status
 {
     Set tSC = $$$OK
     
@@ -305,7 +305,7 @@ Method TestAdapterPerformance()
     Set tElapsedMs2 = ($ZH - tStartTime2) * 1000
     Do ..AssertPerformance(tElapsedMs2, 500, "100 HL7 conversions should complete within 500ms")
     
-    Quit
+    Quit $$$OK
 }
 
 /// Test cleanup operations

@@ -14,7 +14,7 @@ Method %OnNew(initvalue As %String = "") As %Status
 }
 
 /// Test creation of Factory 1 (Modern style) products
-Method TestFactory1ProductCreation()
+Method TestFactory1ProductCreation() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -46,10 +46,11 @@ Method TestFactory1ProductCreation()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Factory1 test complete; "
+    Quit $$$OK
 }
 
 /// Test creation of Factory 2 (Classic style) products
-Method TestFactory2ProductCreation()
+Method TestFactory2ProductCreation() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -81,10 +82,11 @@ Method TestFactory2ProductCreation()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Factory2 test complete; "
+    Quit $$$OK
 }
 
 /// Test that products from the same factory work together
-Method TestSameFactoryCompatibility()
+Method TestSameFactoryCompatibility() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -117,10 +119,11 @@ Method TestSameFactoryCompatibility()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Same factory compatibility test complete; "
+    Quit $$$OK
 }
 
 /// Test that products from different factories are incompatible
-Method TestDifferentFactoryIncompatibility()
+Method TestDifferentFactoryIncompatibility() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -149,10 +152,11 @@ Method TestDifferentFactoryIncompatibility()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Different factory incompatibility test complete; "
+    Quit $$$OK
 }
 
 /// Test factory demonstration method
-Method TestFactoryDemonstration()
+Method TestFactoryDemonstration() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -169,10 +173,11 @@ Method TestFactoryDemonstration()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Factory demonstration test complete; "
+    Quit $$$OK
 }
 
 /// Test healthcare example - Medical Device UI Factory
-Method TestMedicalDeviceUIFactory()
+Method TestMedicalDeviceUIFactory() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -227,10 +232,11 @@ Method TestMedicalDeviceUIFactory()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Medical Device UI Factory test complete; "
+    Quit $$$OK
 }
 
 /// Test platform validation in medical UI factories
-Method TestMedicalUIFactoryValidation()
+Method TestMedicalUIFactoryValidation() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -269,10 +275,11 @@ Method TestMedicalUIFactoryValidation()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Medical UI validation test complete; "
+    Quit $$$OK
 }
 
 /// Test medical UI component rendering
-Method TestMedicalUIComponentRendering()
+Method TestMedicalUIComponentRendering() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -305,10 +312,11 @@ Method TestMedicalUIComponentRendering()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Medical UI rendering test complete; "
+    Quit $$$OK
 }
 
 /// Test factory method polymorphism
-Method TestFactoryPolymorphism()
+Method TestFactoryPolymorphism() As %Status
 {
     // Clear debug global
     Set ^ClineDebug = ""
@@ -335,6 +343,7 @@ Method TestFactoryPolymorphism()
     
     // Debug output
     Set ^ClineDebug = ^ClineDebug _ "Factory polymorphism test complete; "
+    Quit $$$OK
 }
 
 /// Cleanup method after each test

@@ -67,24 +67,77 @@ Use the Observer pattern when:
 
 1. **Subject Class** (`Subject.cls`):
 ```objectscript
-Class Patterns.GoF.Behavioral.Observer.Subject
+Class Patterns.GoF.Behavioral.Observer.Subject Extends %RegisteredObject
 {
-    Property Observers As %Library.ListOfObjects;
+    Parameter PATTERNTYPE = "Behavioral";
+    Parameter VERSION = "1.0.0";
+    
+    Property Observers As %ListOfObjects;
     Property State As %String;
+    
+    Method %OnNew() As %Status
+    {
+        Set ..Observers = ##class(%Library.ListOfObjects).%New()
+        Quit $$$OK
+    }
     
     Method Attach(pObserver As Observer) As %Status
     {
-        // Add an observer to the list
+        // Validate and prevent duplicates
+        If '$IsObject(pObserver) {
+            Quit $$$ERROR($$$GeneralError, "Observer must be a valid object")
+        }
+        
+        // Check if already attached
+        For i=1:1:..Observers.Count() {
+            If ..Observers.GetAt(i) = pObserver Quit
+        }
+        
         Do ..Observers.Insert(pObserver)
+        Quit $$$OK
     }
     
-    Method Notify()
+    Method Notify(pData As %String = "") As %Status
     {
-        // Notify all observers of state change
-        For i = 1:1:..Observers.Count() {
+        // Notify all observers with optional data
+        For i=1:1:..Observers.Count() {
             Set observer = ..Observers.GetAt(i)
-            Do observer.Update($this)
+            If $IsObject(observer) {
+                Do observer.Update($this, pData)
+            }
         }
+        Quit $$$OK
+    }
+    
+    Method SetState(pNewState As %String, pNotify As %Boolean = 1) As %Status
+    {
+        Set ..State = pNewState
+        If pNotify {
+            Do ..Notify(pNewState)
+        }
+        Quit $$$OK
+    }
+    
+    Method Detach(pObserver As Observer) As %Status
+    {
+        // Find and remove the observer
+        For i=1:1:..Observers.Count() {
+            If ..Observers.GetAt(i) = pObserver {
+                Do ..Observers.RemoveAt(i)
+                Quit
+            }
+        }
+        Quit $$$OK
+    }
+    
+    Method GetState() As %String
+    {
+        Quit ..State
+    }
+    
+    Method GetObserverCount() As %Integer
+    {
+        Quit ..Observers.Count()
     }
 }
 ```
@@ -93,23 +146,39 @@ Class Patterns.GoF.Behavioral.Observer.Subject
 ```objectscript
 Class Patterns.GoF.Behavioral.Observer.Observer [ Abstract ]
 {
-    Method Update(pSubject As Subject) [ Abstract ]
+    Parameter PATTERNTYPE = "Behavioral";
+    
+    /// Update method with optional data parameter
+    Method Update(pSubject As Subject, pData As %String = "") As %Status [ Abstract ]
     {
-        // Concrete observers must implement this
+        Quit $$$OK
     }
 }
 ```
 
 3. **Concrete Observer** (example from `NurseStation.cls`):
 ```objectscript
-Method Update(pSubject As Subject)
+Method Update(pSubject As Subject, pData As %String = "") As %Status
 {
-    // React to vital signs changes
-    Set alertLevel = pSubject.GetAlertLevel()
-    If alertLevel = "Critical" {
-        Do ..TriggerAlarm()
-        Do ..PageDoctorOnCall()
+    Set tSC = $$$OK
+    Try {
+        // Check if subject is VitalSignsMonitor
+        If pSubject.%IsA("Patterns.Examples.VitalSignsMonitor") {
+            Set monitor = pSubject
+            Set alertLevel = monitor.GetAlertLevel()
+            
+            // Process based on alert level
+            If alertLevel = "Critical" {
+                Set ..CriticalAlerts = ..CriticalAlerts + 1
+                Do ..AlertQueue.Insert($ZDateTime($H, 3) _ " - CRITICAL: Patient " _ monitor.PatientID)
+                Write "[NurseStation][" _ ..StationID _ "] CRITICAL ALERT!", !
+            }
+        }
     }
+    Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    Quit tSC
 }
 ```
 

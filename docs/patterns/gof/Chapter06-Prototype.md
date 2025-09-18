@@ -6,7 +6,7 @@ Think about how a photocopy machine works. You place an original document on the
 ## Intent
 The Prototype pattern specifies the kinds of objects to create using a prototypical instance, and creates new objects by copying this prototype. It's particularly useful when creating an object is expensive or complex, and you need many similar instances with slight variations.
 
-**Implementation Location:** `src/Patterns/GoF/Creational/Prototype.cls`
+**Implementation Location:** `src/Patterns/GoF/Creational/`
 
 ## When Should You Use It? (Applicability)
 - When creating an object is expensive (database lookups, complex calculations)
@@ -87,19 +87,25 @@ Our healthcare implementation demonstrates cloning patient admission templates:
 ```objectscript
 // Standard Patient Admission
 Set standardTemplate = ##class(StandardPatientRecord).%New()
+// Creates a template with default tests: CBC, BMP, Urinalysis
 Set patient1 = standardTemplate.CustomizeForPatient(
     "P001", "Dr. Smith", "BlueCross")
 
-// Emergency Admission - Different Template
+// Emergency Admission - Different Template  
 Set emergencyTemplate = ##class(EmergencyPatientRecord).%New()
+// Includes STAT tests and triage-based priority adjustment
 Set emergency = emergencyTemplate.CustomizeForEmergency(
     "E001", "Red", "Chest pain")
+// Priority automatically set to 1 for Red triage category
 
 // Pediatric Admission - Special Considerations
 Set pediatricTemplate = ##class(PediatricPatientRecord).%New()
 Set child = pediatricTemplate.CustomizeForChild(
     "P002", 5, 20, "Jane Doe")
-// Automatically calculates weight-based medication dosing!
+// Automatically calculates weight-based medication dosing:
+// - Acetaminophen: 300mg (15mg/kg × 20kg)
+// - Ibuprofen: 200mg (10mg/kg × 20kg)
+// - Maintenance fluids: 1500ml/day
 
 // Using Registry for Template Management
 Set registry = ##class(PrototypeRegistry).%New()
@@ -110,18 +116,49 @@ Do registry.Register("PEDIATRIC", pediatricTemplate)
 // Quick creation from registry
 Set newEmergency = registry.Create("EMERGENCY")
 Set newEmergency.PatientID = "E002"
+
+// Check registered templates
+Write "Registered templates: "_registry.ListKeys(), !
+Write "Total count: "_registry.GetCount(), !
 ```
 
 ## ObjectScript-Specific Features
+
+### PrototypeRegistry Advanced Operations
+```objectscript
+// Check if a prototype is registered
+If registry.IsRegistered("EMERGENCY") {
+    Write "Emergency template available", !
+}
+
+// Create deep clones when needed
+Set deepClone = registry.CreateDeepClone("PEDIATRIC")
+// Deep clone has independent collections and nested objects
+
+// Remove a template from registry
+Do registry.Unregister("OLD_TEMPLATE")
+
+// Clear all templates
+Do registry.Clear()
+
+// Get count of registered templates
+Set count = registry.GetCount()
+Write "Number of templates: "_count, !
+```
 
 ### Shallow Cloning with %ConstructClone
 ```objectscript
 Method Clone() As Prototype
 {
-    // ObjectScript's built-in shallow clone
-    Set clone = ..%ConstructClone()
-    Do clone.InitializeAfterClone()
-    Quit clone
+    // Use ObjectScript's built-in shallow clone
+    Set tClone = ..%ConstructClone()
+    
+    // Call post-clone initialization
+    If $IsObject(tClone) {
+        Do tClone.InitializeAfterClone()
+    }
+    
+    Quit tClone
 }
 ```
 
@@ -129,14 +166,38 @@ Method Clone() As Prototype
 ```objectscript
 Method DeepClone() As Prototype
 {
-    // Serialize then deserialize for deep copy
-    Set stream = ##class(%Stream.GlobalCharacter).%New()
-    Do ..%SerializeObject(stream)
-    Do stream.Rewind()
+    Set tClone = ""
+    Try {
+        // Serialize this object to a stream
+        Set tStream = ##class(%Stream.GlobalCharacter).%New()
+        Set tSC = ..%SerializeObject(tStream)
+        If $$$ISERR(tSC) Quit
+        
+        // Reset stream position
+        Do tStream.Rewind()
+        
+        // Create new instance and deserialize
+        Set tClone = ##class(ConcretePrototype1).%New()
+        Set tSC = tClone.%DeserializeObject(tStream)
+        If $$$ISERR(tSC) {
+            Set tClone = ""
+            Quit
+        }
+        
+        // Deep clone complex properties if they exist
+        If $IsObject(..ComplexProperty) {
+            Set tClone.ComplexProperty = ##class(ComplexObject).%New()
+            Do tClone.ComplexProperty.CopyFrom(..ComplexProperty)
+        }
+        
+        // Initialize after deep clone
+        Do tClone.InitializeAfterClone()
+    }
+    Catch ex {
+        Set tClone = ""
+    }
     
-    Set clone = ..%New()
-    Do clone.%DeserializeObject(stream)
-    Quit clone
+    Quit tClone
 }
 ```
 

@@ -38,6 +38,17 @@ Method %OnNew() As %Status
         Set ..Statistics("Errors") = 0
         Set ..Statistics("ConnectionTime") = 0
         
+        // Additional statistics for subclasses
+        Set ..Statistics("connections") = 0
+        Set ..Statistics("disconnections") = 0
+        Set ..Statistics("last.connect") = ""
+        Set ..Statistics("last.disconnect") = ""
+        Set ..Statistics("bytes.sent") = 0
+        Set ..Statistics("bytes.received") = 0
+        Set ..Statistics("messages.sent") = 0
+        Set ..Statistics("messages.received") = 0
+        Set ..Statistics("errors") = 0
+        
         // Initialize configuration
         Set ..InterfaceConfig("Protocol") = "Standard"
         Set ..InterfaceConfig("Timeout") = 30

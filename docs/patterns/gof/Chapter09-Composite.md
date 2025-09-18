@@ -158,11 +158,11 @@ Class Patterns.GoF.Structural.Component Extends %RegisteredObject [ Abstract ]
 /// Composite class managing child components
 Class Patterns.GoF.Structural.Composite Extends Component
 {
-    Property Children As %Collection.ListOfObj;
+    Property Children As %ListOfObjects [ Private ];
     
     Method %OnNew() As %Status
     {
-        Set ..Children = ##class(%Collection.ListOfObj).%New()
+        Set ..Children = ##class(%ListOfObjects).%New()
         Quit $$$OK
     }
     
@@ -189,11 +189,21 @@ Class Patterns.GoF.Structural.Composite Extends Component
     
     Method Operation() As %String
     {
-        Set tResult = "Composite " _ ..Name _ ": "
-        For i = 1:1:..Children.Count() {
-            Set tChild = ..Children.GetAt(i)
-            Set tResult = tResult _ tChild.Operation() _ " "
+        Set tResult = "Composite[" _ ..Name _ "]{"
+        Set tFirst = 1
+        
+        For tIndex = 1:1:..Children.Count() {
+            Set tChild = ..Children.GetAt(tIndex)
+            If tChild '= "" {
+                If 'tFirst {
+                    Set tResult = tResult _ ", "
+                }
+                Set tResult = tResult _ tChild.Operation()
+                Set tFirst = 0
+            }
         }
+        
+        Set tResult = tResult _ "}"
         Quit tResult
     }
     
@@ -219,7 +229,7 @@ Class Patterns.Examples.OrganizationalUnit Extends Component [ Abstract ]
     }
     
     /// Get total staff count including children
-    Method GetStaffCount() As %Integer [ Abstract ]
+    Method GetTotalStaffCount() As %Integer [ Abstract ]
     {
         Quit 0
     }
@@ -228,26 +238,31 @@ Class Patterns.Examples.OrganizationalUnit Extends Component [ Abstract ]
 /// Hospital composite class
 Class Patterns.Examples.Hospital Extends OrganizationalUnit
 {
-    Property HospitalCode As %String;
-    Property AccreditationLevel As %String;
-    Property Children As %Collection.ListOfObj;
+    Property Departments As %ListOfObjects [ Private ];
+    Property Location As %String;
+    Property BedCount As %Integer;
+    Property AccreditationStatus As %String;
     
     Method CalculateBudget() As %Numeric
     {
         Set tTotal = ..Budget
-        For i = 1:1:..Children.Count() {
-            Set tDept = ..Children.GetAt(i)
-            Set tTotal = tTotal + tDept.CalculateBudget()
+        For i = 1:1:..Departments.Count() {
+            Set tDept = ..Departments.GetAt(i)
+            If $IsObject(tDept) {
+                Set tTotal = tTotal + tDept.CalculateBudget()
+            }
         }
         Quit tTotal
     }
     
-    Method GetStaffCount() As %Integer
+    Method GetTotalStaffCount() As %Integer
     {
         Set tTotal = ..StaffCount
-        For i = 1:1:..Children.Count() {
-            Set tDept = ..Children.GetAt(i)
-            Set tTotal = tTotal + tDept.GetStaffCount()
+        For i = 1:1:..Departments.Count() {
+            Set tDept = ..Departments.GetAt(i)
+            If $IsObject(tDept) {
+                Set tTotal = tTotal + tDept.GetTotalStaffCount()
+            }
         }
         Quit tTotal
     }
@@ -264,7 +279,7 @@ Class Patterns.Examples.MedicalUnit Extends OrganizationalUnit
         Quit ..Budget
     }
     
-    Method GetStaffCount() As %Integer
+    Method GetTotalStaffCount() As %Integer
     {
         Quit ..StaffCount
     }

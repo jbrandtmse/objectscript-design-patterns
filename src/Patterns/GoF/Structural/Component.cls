@@ -73,12 +73,107 @@ Method GetChild(pIndex As %Integer) As Component
 }
 
 /// <p>
-/// Pre-order traversal of the component tree.
+/// Pre-order traversal of the component tree returning string of names.
+/// Processes the current node before its children.
+/// </p>
+/// <returns>Comma-separated string of component names in pre-order</returns>
+Method TraversePreOrder() As %String
+{
+    Set tResult = ..Name
+    
+    // Process children if this is a composite
+    Set tIndex = 1
+    Set tChild = ..GetChild(tIndex)
+    While tChild '= "" {
+        Set tChildResult = tChild.TraversePreOrder()
+        If tChildResult '= "" {
+            Set tResult = tResult _ "," _ tChildResult
+        }
+        Set tIndex = tIndex + 1
+        Set tChild = ..GetChild(tIndex)
+    }
+    
+    Quit tResult
+}
+
+/// <p>
+/// Post-order traversal of the component tree returning string of names.
+/// Processes children before the current node.
+/// </p>
+/// <returns>Comma-separated string of component names in post-order</returns>
+Method TraversePostOrder() As %String
+{
+    Set tResult = ""
+    
+    // Process children first if this is a composite
+    Set tIndex = 1
+    Set tChild = ..GetChild(tIndex)
+    While tChild '= "" {
+        Set tChildResult = tChild.TraversePostOrder()
+        If tChildResult '= "" {
+            If tResult '= "" {
+                Set tResult = tResult _ ","
+            }
+            Set tResult = tResult _ tChildResult
+        }
+        Set tIndex = tIndex + 1
+        Set tChild = ..GetChild(tIndex)
+    }
+    
+    // Add current node
+    If tResult '= "" {
+        Set tResult = tResult _ "," _ ..Name
+    } Else {
+        Set tResult = ..Name
+    }
+    
+    Quit tResult
+}
+
+/// <p>
+/// Level-order (breadth-first) traversal of the component tree returning string of names.
+/// Processes nodes level by level using a queue approach.
+/// </p>
+/// <returns>Comma-separated string of component names in level-order</returns>
+Method TraverseLevelOrder() As %String
+{
+    Set tResult = ""
+    
+    // Use a list to simulate a queue
+    Set tQueue = ##class(%ListOfObjects).%New()
+    Do tQueue.Insert($this)
+    
+    While tQueue.Count() > 0 {
+        // Dequeue from front
+        Set tCurrent = tQueue.GetAt(1)
+        Do tQueue.RemoveAt(1)
+        
+        // Add current node name to result
+        If tResult '= "" {
+            Set tResult = tResult _ ","
+        }
+        Set tResult = tResult _ tCurrent.Name
+        
+        // Enqueue children
+        Set tIndex = 1
+        Set tChild = tCurrent.GetChild(tIndex)
+        While tChild '= "" {
+            Do tQueue.Insert(tChild)
+            Set tIndex = tIndex + 1
+            Set tChild = tCurrent.GetChild(tIndex)
+        }
+    }
+    
+    Quit tResult
+}
+
+/// <p>
+/// Pre-order traversal of the component tree with visitor pattern.
 /// Processes the current node before its children.
 /// </p>
 /// <param name="pVisitor">Optional visitor object with Visit(component) method</param>
 /// <returns>%Status indicating success or failure</returns>
-Method TraversePreOrder(pVisitor As %RegisteredObject = "") As %Status
+Method TraversePreOrderWithVisitor(pVisitor As %RegisteredObject = "") As %Status
 {
     Set tSC = $$$OK
     
@@ -92,7 +187,7 @@ Method TraversePreOrder(pVisitor As %RegisteredObject = "") As %Status
         Set tIndex = 1
         Set tChild = ..GetChild(tIndex)
         While tChild '= "" {
-            Set tSC = tChild.TraversePreOrder(pVisitor)
+            Set tSC = tChild.TraversePreOrderWithVisitor(pVisitor)
             If $$$ISERR(tSC) Quit
             Set tIndex = tIndex + 1
             Set tChild = ..GetChild(tIndex)
@@ -106,12 +201,12 @@ Method TraversePreOrder(pVisitor As %RegisteredObject = "") As %Status
 }
 
 /// <p>
-/// Post-order traversal of the component tree.
+/// Post-order traversal of the component tree with visitor pattern.
 /// Processes children before the current node.
 /// </p>
 /// <param name="pVisitor">Optional visitor object with Visit(component) method</param>
 /// <returns>%Status indicating success or failure</returns>
-Method TraversePostOrder(pVisitor As %RegisteredObject = "") As %Status
+Method TraversePostOrderWithVisitor(pVisitor As %RegisteredObject = "") As %Status
 {
     Set tSC = $$$OK
     
@@ -120,7 +215,7 @@ Method TraversePostOrder(pVisitor As %RegisteredObject = "") As %Status
         Set tIndex = 1
         Set tChild = ..GetChild(tIndex)
         While tChild '= "" {
-            Set tSC = tChild.TraversePostOrder(pVisitor)
+            Set tSC = tChild.TraversePostOrderWithVisitor(pVisitor)
             If $$$ISERR(tSC) Quit
             Set tIndex = tIndex + 1
             Set tChild = ..GetChild(tIndex)
@@ -139,12 +234,12 @@ Method TraversePostOrder(pVisitor As %RegisteredObject = "") As %Status
 }
 
 /// <p>
-/// Level-order (breadth-first) traversal of the component tree.
+/// Level-order (breadth-first) traversal of the component tree with visitor pattern.
 /// Processes nodes level by level using a queue approach.
 /// </p>
 /// <param name="pVisitor">Optional visitor object with Visit(component) method</param>
 /// <returns>%Status indicating success or failure</returns>
-Method TraverseLevelOrder(pVisitor As %RegisteredObject = "") As %Status
+Method TraverseLevelOrderWithVisitor(pVisitor As %RegisteredObject = "") As %Status
 {
     Set tSC = $$$OK
     
@@ -181,30 +276,46 @@ Method TraverseLevelOrder(pVisitor As %RegisteredObject = "") As %Status
 }
 
 /// <p>
-/// Gets the depth of this component in the tree.
-/// Root has depth 0, its children have depth 1, etc.
+/// Gets the depth of the subtree rooted at this component.
+/// A leaf has depth 1, a node with children has depth = max(child depths) + 1.
 /// </p>
-/// <returns>Integer depth value</returns>
+/// <returns>Integer depth of the subtree</returns>
 Method GetDepth() As %Integer
 {
-    Set tDepth = 0
-    Set tParent = ..Parent
+    Set tMaxChildDepth = 0
     
-    While tParent '= "" {
-        Set tDepth = tDepth + 1
-        Set tParent = tParent.Parent
+    // Check children depths
+    Set tIndex = 1
+    Set tChild = ..GetChild(tIndex)
+    While tChild '= "" {
+        Set tChildDepth = tChild.GetDepth()
+        If tChildDepth > tMaxChildDepth {
+            Set tMaxChildDepth = tChildDepth
+        }
+        Set tIndex = tIndex + 1
+        Set tChild = ..GetChild(tIndex)
     }
     
-    Quit tDepth
+    // Return max child depth + 1, or 1 for leaf
+    Quit tMaxChildDepth + 1
 }
 
 /// <p>
-/// Gets the level of this component (alias for GetDepth).
+/// Gets the level of this component in the tree.
+/// Root has level 0, its children have level 1, etc.
 /// </p>
 /// <returns>Integer level value</returns>
 Method GetLevel() As %Integer
 {
-    Quit ..GetDepth()
+    Set tLevel = 0
+    Set tParent = ..Parent
+    
+    While tParent '= "" {
+        Set tLevel = tLevel + 1
+        Set tParent = tParent.Parent
+    }
+    
+    Quit tLevel
 }
 
 /// <p>
@@ -235,6 +346,29 @@ Method GetComponentCount() As %Integer
     }
     
     Quit tCount
+}
+
+/// <p>
+/// Validates the component and its structure.
+/// </p>
+/// <returns>%Status indicating if the component is valid</returns>
+Method Validate() As %Status
+{
+    If ..Name = "" {
+        Quit $$$ERROR($$$GeneralError, "Component name cannot be empty")
+    }
+    Quit $$$OK
+}
+
+/// <p>
+/// Creates a clone of this component.
+/// Subclasses should override to provide deep copy functionality.
+/// </p>
+/// <returns>Clone of this component</returns>
+Method Clone() As Component
+{
+    // Abstract method - subclasses must implement
+    Quit ""
 }
 
 }

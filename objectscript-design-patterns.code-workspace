@@ -1,14 +1,14 @@
 {
   "folders": [
-	{
-		"name": "ObjectScript Design Patterns",
-		"path": "."
-	},
-	{
-		"name": "local:HSCUSTOM",
-		"uri": "isfs://local:hscustom/"
-	}
-],
+    {
+      "name": "ObjectScript Design Patterns",
+      "path": "."
+    },
+    {
+      "name": "localhost:HSCUSTOM",
+      "uri": "isfs://localhost:hscustom/"
+    }
+  ],
   "settings": {
     // Workspace-specific settings
     "files.exclude": {

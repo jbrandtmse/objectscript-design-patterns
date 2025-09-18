@@ -64,6 +64,9 @@ AbstractFactory
 /// Abstract Factory interface
 Class Patterns.GoF.Creational.AbstractFactory Extends %RegisteredObject [ Abstract ]
 {
+    Parameter PATTERNTYPE = "Creational";
+    Parameter PATTERNNAME = "Abstract Factory";
+    
     Method CreateProductA() As AbstractProductA [ Abstract ]
     {
         Quit $$$NULLOREF
@@ -72,6 +75,30 @@ Class Patterns.GoF.Creational.AbstractFactory Extends %RegisteredObject [ Abstra
     Method CreateProductB() As AbstractProductB [ Abstract ]
     {
         Quit $$$NULLOREF
+    }
+    
+    /// Demonstrates product family creation and interaction
+    Method DemonstrateProductFamily() As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            Set productA = ..CreateProductA()
+            Set productB = ..CreateProductB()
+            
+            // Products from same factory should work together
+            Set tSC = productB.InteractWithProductA(productA)
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
+    
+    /// Gets factory information
+    Method GetFactoryInfo() As %String
+    {
+        Quit "Abstract Factory: " _ ..%ClassName(1) _ 
+             " (Type: " _ ..#PATTERNTYPE _ ", Pattern: " _ ..#PATTERNNAME _ ")"
     }
 }
 ```
@@ -95,12 +122,47 @@ Class Patterns.Examples.MedicalDeviceUIFactory Extends %RegisteredObject [ Abstr
     {
         Quit $$$NULLOREF
     }
+    
+    Method GetPlatformName() As %String [ Abstract ]
+    {
+        Quit ""
+    }
+    
+    /// Demonstrates creating a complete UI suite
+    Method CreateUIDemo() As %Status
+    {
+        Set tSC = $$$OK
+        Try {
+            // Create all UI components
+            Set tButton = ..CreateButton()
+            Set tForm = ..CreateForm()
+            Set tChart = ..CreateChart()
+            
+            // Render components
+            Do tButton.Render()
+            Do tForm.Render()
+            Do tChart.Display()
+            
+            // Test component interactions
+            Set tSC = tForm.AttachButton(tButton)
+            Set tSC = tForm.AttachChart(tChart)
+            
+            Write "UI suite created for: ", ..GetPlatformName(), !
+        }
+        Catch ex {
+            Set tSC = ex.AsStatus()
+        }
+        Quit tSC
+    }
 }
 
 /// Concrete factory for tablet UI
 Class Patterns.Examples.TabletUIFactory Extends MedicalDeviceUIFactory
 {
     Parameter PLATFORM = "Tablet";
+    Parameter SCREENSIZE = "10-12 inch";
+    Parameter INPUTMETHOD = "Touch";
+    Parameter ORIENTATION = "Portrait/Landscape";
     
     Method CreateButton() As MedicalUIButton
     {
@@ -115,6 +177,11 @@ Class Patterns.Examples.TabletUIFactory Extends MedicalDeviceUIFactory
     Method CreateChart() As MedicalUIChart
     {
         Quit ##class(TabletChart).%New()
+    }
+    
+    Method GetPlatformName() As %String
+    {
+        Quit ..#PLATFORM
     }
 }
 ```
@@ -230,8 +297,40 @@ Class FactoryRegistry
 
 3. **Product Family Parameters**: Use class parameters to identify product families:
 ```objectscript
-Parameter FAMILY = "1";
-Parameter STYLE = "Modern";
+// ConcreteFactory1 parameters
+Parameter FACTORYFAMILY = 1;
+Parameter FACTORYSTYLE = "Modern";
+
+// TabletUIFactory parameters
+Parameter PLATFORM = "Tablet";
+Parameter SCREENSIZE = "10-12 inch";
+Parameter INPUTMETHOD = "Touch";
+Parameter ORIENTATION = "Portrait/Landscape";
+```
+
+4. **Abstract Product Interface**: Define clear interfaces for products:
+```objectscript
+Class AbstractProductA Extends %RegisteredObject [ Abstract ]
+{
+    Parameter PRODUCTTYPE = "A";
+    
+    Method GetDescription() As %String [ Abstract ] { Quit "" }
+    Method PerformOperation() As %Status [ Abstract ] { Quit $$$OK }
+    Method GetCompatibilityInfo() As %String [ Abstract ] { Quit "" }
+    
+    /// Base validation method
+    Method IsValid() As %Boolean
+    {
+        Quit ($IsObject($This) && (..GetDescription() '= ""))
+    }
+    
+    /// Extract product family from class name
+    Method GetProductFamily() As %String
+    {
+        Set className = ..%ClassName(1)
+        Quit $Extract(className, $Length(className))
+    }
+}
 ```
 
 ## Common Pitfalls

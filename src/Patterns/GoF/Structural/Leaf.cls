@@ -26,7 +26,7 @@ Property Data As %String;
 /// <returns>String result of the leaf operation</returns>
 Method Operation() As %String
 {
-    Set tResult = "Leaf[" _ ..Name _ "]"
+    Set tResult = "Leaf " _ ..Name
     If ..Data '= "" {
         Set tResult = tResult _ ": " _ ..Data
     }

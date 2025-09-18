@@ -41,7 +41,7 @@ Method Operation() As %String
     
     If ..HasImplementation() {
         Set tImplResult = ..Implementation.OperationImpl()
-        Set tResult = "RefinedAbstraction: Based on (" _ tImplResult _ ")"
+        Set tResult = "RefinedAbstraction: " _ tImplResult
     } Else {
         Set tResult = "RefinedAbstraction: No implementation set"
     }
@@ -76,13 +76,17 @@ Method RefinedOperation() As %String
 /// Demonstrates how refined abstractions can add parameterized operations
 /// that leverage the implementation in different ways.
 /// </p>
-Method ExtendedOperation(pParameter As %String) As %String
+Method ExtendedOperation(pParameter As %String = "") As %String
 {
     Set tResult = ""
     
     If ..HasImplementation() {
         Set tImplResult = ..Implementation.OperationImpl()
-        Set tResult = "Extended[" _ pParameter _ "]: " _ tImplResult
+        If pParameter = "" {
+            Set tResult = "Extended[" _ tImplResult _ "]"
+        } Else {
+            Set tResult = "Extended[" _ pParameter _ "]: " _ tImplResult
+        }
     } Else {
         Set tResult = "ExtendedOperation: No implementation"
     }
@@ -106,6 +110,21 @@ Method GetStatus() As %String
     }
     
     Quit tStatus
+}
+
+/// Get information about the refined abstraction
+/// <p>
+/// Returns a simple info string including the implementation type.
+/// </p>
+Method GetInfo() As %String
+{
+    Set tInfo = "RefinedAbstraction"
+    
+    If ..HasImplementation() {
+        Set tInfo = tInfo _ " with " _ ..GetImplementationType()
+    }
+    
+    Quit tInfo
 }
 
 }

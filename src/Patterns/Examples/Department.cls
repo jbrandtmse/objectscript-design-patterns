@@ -317,4 +317,44 @@ Method IsLeaf() As %Boolean
     Quit 0
 }
 
+/// <p>
+/// Find a unit by name within the department hierarchy
+/// </p>
+/// <param name="pName">Name of the unit to find</param>
+/// <returns>OrganizationalUnit or empty string if not found</returns>
+Method FindUnit(pName As %String) As Patterns.Examples.OrganizationalUnit
+{
+    Set tResult = ""
+    
+    // Check if this department matches
+    If ..Name = pName {
+        Set tResult = $this
+        Quit tResult
+    }
+    
+    // Search sub-units
+    For i = 1:1:..SubUnits.Count() {
+        Set tUnit = ..SubUnits.GetAt(i)
+        If $IsObject(tUnit) {
+            If tUnit.Name = pName {
+                Set tResult = tUnit
+                Quit
+            }
+            // If unit has FindUnit method, search recursively
+            Try {
+                Set tFound = tUnit.FindUnit(pName)
+                If $IsObject(tFound) {
+                    Set tResult = tFound
+                    Quit
+                }
+            }
+            Catch {
+                // Unit may not have FindUnit method
+            }
+        }
+    }
+    
+    Quit tResult
+}
+
 }

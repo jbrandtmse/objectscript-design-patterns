@@ -24,6 +24,9 @@ Parameter MAXSTORED = 50;
 /// Current measurement count
 Property MeasurementCount As %Integer [ InitialExpression = 0 ];
 
+/// Device active status
+Property IsActive As %Boolean [ InitialExpression = 0 ];
+
 /// Constructor
 Method %OnNew(initvalue As %String = "") As %Status
 {
@@ -63,7 +66,7 @@ Method StartMonitoring() As %Status
         Set ..BatteryLevel = ..BatteryLevel - 2
         
         // Log status
-        Do ..SendData("STATUS", "Portable monitor started - Battery: "_..BatteryLevel_"%")
+        Do ..SendData("STATUS: Portable monitor started - Battery: "_..BatteryLevel_"%")
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -97,7 +100,7 @@ Method StopMonitoring() As %Status
         Set ..IsMonitoring = 0
         
         // Log status
-        Do ..SendData("STATUS", "Portable monitor stopped - Battery: "_..BatteryLevel_"%")
+        Do ..SendData("STATUS: Portable monitor stopped - Battery: "_..BatteryLevel_"%")
     }
     Catch ex {
         Set tSC = ex.AsStatus()
@@ -167,7 +170,7 @@ Method TransmitMeasurement(pType As %String, pValue As %String) As %Status
         // Format measurement data
         Set tData = "MEASUREMENT|"_pType_"|"_pValue_"|"_$ZDATETIME($HOROLOG, 3)
         
-        Set tSC = ..SendData("MEASUREMENT", tData)
+        Set tSC = ..SendData(tData)
         If $$$ISERR(tSC) Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
         
         // Battery usage for transmission
@@ -192,7 +195,7 @@ Method TransmitStoredMeasurements() As %Status
         }
         
         // Send batch header
-        Set tSC = ..SendData("BATCH_START", "COUNT="_..MeasurementCount)
+        Set tSC = ..SendData("BATCH_START: COUNT="_..MeasurementCount)
         If $$$ISERR(tSC) Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
         
         // Send each measurement
@@ -204,13 +207,13 @@ Method TransmitStoredMeasurements() As %Status
                 Set tValue = $LIST(tMeasurement, 3)
                 
                 Set tData = "STORED|"_tType_"|"_tValue_"|"_tTimestamp
-                Set tSC = ..SendData("MEASUREMENT", tData)
+                Set tSC = ..SendData(tData)
                 If $$$ISERR(tSC) Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
             }
         }
         
         // Send batch footer
-        Set tSC = ..SendData("BATCH_END", "TRANSMITTED="_..MeasurementCount)
+        Set tSC = ..SendData("BATCH_END: TRANSMITTED="_..MeasurementCount)
         If $$$ISERR(tSC) Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
         
         // Clear stored measurements after successful transmission
@@ -239,11 +242,11 @@ Method SetPowerSavingMode(pEnabled As %Boolean) As %Status
         If pEnabled {
             // Increase monitoring interval in power saving mode
             Set ..MonitoringInterval = ..MonitoringInterval * 2
-            Do ..SendData("CONFIG", "Power saving mode enabled")
+            Do ..SendData("CONFIG: Power saving mode enabled")
         } Else {
             // Restore normal monitoring interval
             Set ..MonitoringInterval = ..MonitoringInterval / 2
-            Do ..SendData("CONFIG", "Power saving mode disabled")
+            Do ..SendData("CONFIG: Power saving mode disabled")
         }
     }
     Catch ex {
@@ -259,16 +262,83 @@ Method ChargeBattery(pAmount As %Integer = 100) As %Status
     Set tSC = $$$OK
     
     Try {
+        // Cannot charge while connected/active
+        If ..IsActive {
+            Set tSC = $$$ERROR($$$GeneralError, "Cannot charge while device is active")
+            Quit
+        }
+        
         Set ..BatteryLevel = ..BatteryLevel + pAmount
         If ..BatteryLevel > 100 Set ..BatteryLevel = 100
         
-        Do ..SendData("STATUS", "Battery charged to "_..BatteryLevel_"%")
+        // Only send status if interface is available
+        If $IsObject(..Interface) {
+            Do ..SendData("STATUS: Battery charged to "_..BatteryLevel_"%")
+        }
     }
     Catch ex {
         Set tSC = ex.AsStatus()
     }
     
     Quit tSC
+}
+
+/// Read data from the device
+Method ReadData() As %String
+{
+    // Check if connected via interface
+    If '$IsObject(..Interface) || '..Interface.IsConnected {
+        Quit "Device not connected"
+    }
+    
+    // Simulate reading basic vital signs
+    Set heartRate = 60 + $Random(40)  // 60-100 bpm
+    Set temp = 36.5 + ($Random(20) / 10)  // 36.5-38.5°C
+    Set pulse = 60 + $Random(40)  // 60-100
+    
+    // Format the output
+    Set output = ""
+    Set output = output _ "Temp: " _ temp _ "°C | "
+    Set output = output _ "Pulse: " _ pulse _ " bpm | "
+    Set output = output _ "Battery: " _ ..BatteryLevel _ "%"
+    
+    // Reduce battery for reading
+    Set ..BatteryLevel = ..BatteryLevel - 1
+    If ..BatteryLevel < 0 Set ..BatteryLevel = 0
+    
+    Quit output
+}
+
+/// Check if battery is low
+Method IsBatteryLow() As %Boolean
+{
+    Quit (..BatteryLevel < 15)
+}
+
+/// Override Connect to set IsActive
+Method Connect() As %Status
+{
+    Set tSC = ##super()
+    If $$$ISOK(tSC) {
+        Set ..IsActive = 1
+    }
+    Quit tSC
+}
+
+/// Override Disconnect to clear IsActive
+Method Disconnect() As %Status
+{
+    Set tSC = ##super()
+    If $$$ISOK(tSC) {
+        Set ..IsActive = 0
+    }
+    Quit tSC
+}
+
+/// Get current readings for compatibility
+Method GetCurrentReadings() As %String
+{
+    Quit ..ReadData()
 }
 
 /// Get device status

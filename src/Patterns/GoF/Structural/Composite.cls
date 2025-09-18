@@ -77,11 +77,22 @@ Method Add(pComponent As Component) As %Status
             Quit
         }
         
-        // Check for circular reference
-        If ..IsAncestorOf(pComponent) {
-            Set tSC = $$$ERROR($$$GeneralError, "Cannot add component - would create circular reference")
+        // Check for self-reference
+        If pComponent = $this {
+            Set tSC = $$$ERROR($$$GeneralError, "Cannot add component to itself")
             Quit
         }
+        
+        // Check for circular reference - would pComponent become its own ancestor?
+        Set tCurrent = $this
+        While tCurrent '= "" {
+            If tCurrent = pComponent {
+                Set tSC = $$$ERROR($$$GeneralError, "Cannot add component - would create circular reference")
+                Quit
+            }
+            Set tCurrent = tCurrent.Parent
+        }
+        If $$$ISERR(tSC) Quit
         
         // Remove from current parent if exists
         If pComponent.Parent '= "" {

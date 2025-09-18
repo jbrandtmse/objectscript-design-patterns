@@ -37,9 +37,9 @@ Method %OnNew() As %Status
     Set ..MACAddress = ..GenerateMACAddress()
     
     // Set Bluetooth-specific configuration
-    Do ..Configuration.SetAt("bluetooth.version", ..BluetoothVersion)
-    Do ..Configuration.SetAt("bluetooth.power.class", "Class 2")
-    Do ..Configuration.SetAt("bluetooth.profile", "HDP")  // Health Device Profile
+    Set ..Configuration("bluetooth.version") = ..BluetoothVersion
+    Set ..Configuration("bluetooth.power.class") = "Class 2"
+    Set ..Configuration("bluetooth.profile") = "HDP"  // Health Device Profile
     
     Quit $$$OK
 }
@@ -264,7 +264,7 @@ Method EnableLowEnergyMode() As %Status
         // Switch to Bluetooth Low Energy (BLE) settings
         Set ..PowerConsumption = ..PowerConsumption * 0.1  // 90% reduction
         Set ..MaxRange = 5  // Reduced range
-        Do ..Configuration.SetAt("bluetooth.mode", "BLE")
+        Set ..Configuration("bluetooth.mode") = "BLE"
         
         Write !, "Bluetooth: Low Energy mode enabled"
     }
@@ -273,6 +273,12 @@ Method EnableLowEnergyMode() As %Status
     }
     
     Quit tSC
+}
+
+/// Get the interface type
+Method GetInterfaceType() As %String
+{
+    Quit "Bluetooth"
 }
 
 }
