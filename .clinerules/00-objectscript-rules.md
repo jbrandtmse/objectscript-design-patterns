@@ -85,6 +85,7 @@
 
 ## InterSystems Libraries  
    - Use built-in IRIS classes/packages for performance and maintainability.
+   - InterSystems Librarys have packages that begin with %, and also include: HS, Ens, and EnsLib amoung others.
 
 ## Naming Conventions  
    - Parameters have "p" prefix (e.g., pItem).  
@@ -97,7 +98,7 @@
    - Class/Method banners must have HTML & DocBook markup
 
 ## Additional Rules in Memory Bank
-   - Follow the additional rules found in the memory bank.   In particular observe the rules in memory-bank/permanent/objectscriptrules.md
+   - Follow the additional rules found in the memory bank.   In particular observe the rules in memory-bank/permanent/objectscriptrules.md if it exists.
 
 ## Indentation and Formatting
    - Always indent ObjectScript commands within methods by at least 1 space or tab to avoid compile errors.
@@ -105,7 +106,7 @@
    - When editing ObjectScript class files, prefer reading the entire file then writing the full content back, rather than partial search-replace, to maintain indentation integrity.
 
 ## Python Integration
-   - Read documention/IRIS_Embedded_Python_Complete_Manual.md at the start of any session that intends to use Python
+   - Read documention/IRIS_Embedded_Python_Complete_Manual.md at the start of any session that intends to use Python, if it doesn't exist use Perplexity to search for the latest embedded python documentation.
    - Prefer native ObjectScript for IRIS operations (globals, persistence, SQL, transactions)
    - Use embedded Python only for external library integration (OpenAI, NumPy, ML libraries, document processing)
    - Follow embedded Python patterns: %SYS.Python.Import() for libraries, [Language = python] for methods
@@ -133,9 +134,9 @@
 - I have DIRECT access to IRIS through MCP server tools for debugging and execution
 - Available tools: execute_command, execute_classmethod, get_global, set_global, execute_sql
 - Can start/stop IRIS Interoperability Productions using interoperability_production_* tools
-- **CRITICAL**: Always specify namespace="OPTIRAG" parameter when using IRIS MCP tools
+- **CRITICAL**: Always specify namespace parameter when using IRIS MCP tools
 - **CRITICAL**: execute_classmethod only works with CLASS METHODS (marked ClassMethod), NOT instance methods
-- For instance methods, use execute_command with ObjectScript to create instance and call method
+- For instance methods, build a classmethod that instances the class and then calls the instance method.
 - **CRITICAL**: Do NOT use execute_command for debugging/testing - create unit tests or temporary debug class methods instead
 - Self-debugging pattern: Initialize ^ClineDebug = "", capture steps with SET ^ClineDebug = ^ClineDebug _ "step info; ", inspect with get_global
 - Can execute ObjectScript commands directly without user intervention

@@ -50,19 +50,24 @@ Property DeadlineTimestamp As %TimeStamp;
 
 /// Constructor with approval-specific parameters
 /// 
-/// @param pApprovalType Type of approval
-/// @param pAmount Amount requiring approval
-/// @param pRiskLevel Risk level (1-4)
+/// @param pType Request type (should be "Approval")
+/// @param pData JSON string with approval data
 /// @return %Status
-Method %OnNew(pApprovalType As %String = "", pAmount As %Decimal = 0, pRiskLevel As %Integer = 1) As %Status
+Method %OnNew(pType As %String = "Approval", pData As %String = "") As %Status
 {
-    Set tSC = ##super("Approval", "")
+    Set tSC = ##super(pType, pData)
     If $$$ISERR(tSC) Quit tSC
     
     Try {
-        Set ..ApprovalType = pApprovalType
-        Set ..Amount = pAmount
-        Set ..RiskLevel = pRiskLevel
+        // Parse data if provided as JSON
+        If pData '= "" {
+            Set tDataObj = {}.%FromJSON(pData)
+            If $ISOBJECT(tDataObj) {
+                If tDataObj.%IsDefined("approvalType") Set ..ApprovalType = tDataObj.approvalType
+                If tDataObj.%IsDefined("amount") Set ..Amount = tDataObj.amount
+                If tDataObj.%IsDefined("riskLevel") Set ..RiskLevel = tDataObj.riskLevel
+            }
+        }
         
         // Set priority based on risk level and amount
         Set ..Priority = ..CalculatePriority()
@@ -310,7 +315,21 @@ Method ToAuditEntry() As %DynamicObject
 /// @return ApprovalRequest
 ClassMethod CreateTestRequest(pType As %String = "Medication", pAmount As %Decimal = 1000) As ApprovalRequest
 {
-    Set tRequest = ##class(ApprovalRequest).%New(pType, pAmount, 2)
+    Set tData = {}
+    Set tData.approvalType = pType
+    Set tData.amount = pAmount
+    // Set risk level based on amount - this allows proper handler selection
+    If pAmount <= 500 {
+        Set tData.riskLevel = 1  // Low risk for small amounts - Nurse can handle
+    } ElseIf pAmount <= 10000 {
+        Set tData.riskLevel = 2  // Medium risk - Doctor can handle
+    } ElseIf pAmount <= 50000 {
+        Set tData.riskLevel = 3  // High risk - Department Head can handle
+    } Else {
+        Set tData.riskLevel = 4  // Critical risk - Administrator must handle
+    }
+    
+    Set tRequest = ##class(ApprovalRequest).%New("Approval", tData.%ToJSON())
     Set tRequest.Department = "Cardiology"
     Set tRequest.PatientId = "PAT-" _ $Random(10000)
     Set tRequest.Reason = "Test approval request for " _ pType

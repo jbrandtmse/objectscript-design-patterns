@@ -42,7 +42,7 @@ Method %OnNew() As %Status
 /// 
 /// @param pRequest The request to check
 /// @return %Boolean
-Method CanHandleSpecific(pRequest As Request) As %Boolean
+Method CanHandleSpecific(pRequest As Patterns.GoF.Behavioral.Request) As %Boolean
 {
     // Must be an approval request
     If 'pRequest.%IsA("Patterns.Examples.ApprovalRequest") Quit 0
@@ -72,16 +72,16 @@ Method CanHandleSpecific(pRequest As Request) As %Boolean
 /// 
 /// @param pRequest The request to process
 /// @return Response object
-Method ProcessSpecific(pRequest As Request) As Response
+Method ProcessSpecific(pRequest As Patterns.GoF.Behavioral.Request) As Patterns.GoF.Behavioral.Response
 {
     Set tApprovalRequest = pRequest
-    Set tResponse = ##class(Response).%New()
+    Set tResponse = ##class(Patterns.GoF.Behavioral.Response).%New()
     
     Try {
         // Validate request
         Set tSC = tApprovalRequest.Validate()
         If $$$ISERR(tSC) {
-            Set tResponse = ##class(Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
             Quit
         }
         
@@ -99,7 +99,7 @@ Method ProcessSpecific(pRequest As Request) As Response
         // Emergency requests need special handling
         If tApprovalRequest.ApprovalType = "Emergency" {
             If 'tApprovalRequest.IsUrgent {
-                Set tResponse = ##class(Response).Failure("Emergency requests must be marked as urgent")
+                Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Emergency requests must be marked as urgent")
                 Do tApprovalRequest.Reject(..HandlerName, "Emergency request not marked urgent")
                 Quit
             }
@@ -109,7 +109,7 @@ Method ProcessSpecific(pRequest As Request) As Response
             Do tApprovalRequest.ApprovalConditions.Insert("Post-emergency review required")
             Do tApprovalRequest.ApprovalConditions.Insert("Full documentation within 72 hours")
             
-            Set tResponse = ##class(Response).Success(
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                 "Emergency approved by " _ ..HandlerName,
                 "Emergency request approved for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
             )
@@ -125,7 +125,7 @@ Method ProcessSpecific(pRequest As Request) As Response
                 // Perform department budget review
                 Set tBudgetAvailable = ..CheckDepartmentBudget(tApprovalRequest.Department, tApprovalRequest.Amount)
                 If 'tBudgetAvailable {
-                    Set tResponse = ##class(Response).Failure("Department budget exceeded")
+                    Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Department budget exceeded")
                     Do tApprovalRequest.Reject(..HandlerName, "Insufficient department budget")
                     Quit
                 }
@@ -146,7 +146,7 @@ Method ProcessSpecific(pRequest As Request) As Response
                 Do tApprovalRequest.ApprovalConditions.Insert("Requires risk mitigation plan")
             }
             
-            Set tResponse = ##class(Response).Success(
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                 "Approved by " _ ..HandlerName,
                 "Request approved for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
             )
@@ -159,11 +159,11 @@ Method ProcessSpecific(pRequest As Request) As Response
             }
         } Else {
             // Cannot approve - will pass to next handler
-            Set tResponse = ##class(Response).%New(0, "Amount exceeds department head approval limit")
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).%New(0, "Amount exceeds department head approval limit")
         }
     }
     Catch ex {
-        Set tResponse = ##class(Response).Failure("Processing error: " _ ex.Name, 500)
+        Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Processing error: " _ ex.Name, 500)
         Do tResponse.AddError(ex.Name _ " at " _ ex.Location)
     }
     

@@ -155,16 +155,30 @@ Method ValidateChain() As %Status
     Set tCurrent = $this
     
     Try {
+        Set tCount = 0
         While $IsObject(tCurrent) {
-            Set tClassName = tCurrent.%ClassName(1) _ ":" _ tCurrent.%Oid()
+            Set tCount = tCount + 1
             
-            If $Data(tVisited(tClassName)) {
-                Set tSC = $$$ERROR($$$GeneralError, "Circular reference detected in chain at: " _ tClassName)
-                Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
+            // Check all previously visited handlers
+            For i=1:1:tCount-1 {
+                If $Data(tVisited(i)) {
+                    // Compare object references directly
+                    If tVisited(i) = tCurrent {
+                        Set tSC = $$$ERROR($$$GeneralError, "Circular reference detected in chain at: " _ tCurrent.%ClassName(1))
+                        Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
+                    }
+                }
             }
             
-            Set tVisited(tClassName) = 1
+            // Store the current object reference
+            Set tVisited(tCount) = tCurrent
             Set tCurrent = tCurrent.NextHandler
+            
+            // Safety check for infinite loops
+            If tCount > 100 {
+                Set tSC = $$$ERROR($$$GeneralError, "Chain too long or circular reference detected")
+                Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
+            }
         }
     }
     Catch ex {

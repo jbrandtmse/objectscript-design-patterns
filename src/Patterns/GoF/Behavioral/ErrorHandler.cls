@@ -41,20 +41,21 @@ Property RetryDelay As %Integer [ InitialExpression = 1 ];
 /// Fallback response for FALLBACK strategy
 Property FallbackResponse As %String;
 
-/// Constructor with error types and recovery strategy
+/// Constructor with name and priority (matches parent signature)
 /// 
-/// @param pErrorTypes Comma-delimited list of error types to handle
-/// @param pRecoveryStrategy Recovery strategy to use
+/// @param pName Handler name
+/// @param pPriority Handler priority
 /// @return %Status
-Method %OnNew(pErrorTypes As %String = "", pRecoveryStrategy As %String = "LOG") As %Status
+Method %OnNew(pName As %String = "ErrorHandler", pPriority As %Integer = 1000) As %Status
 {
-    Set tSC = ##super("ErrorHandler")
+    Set tSC = ##super(pName, pPriority)
     If $$$ISERR(tSC) Quit tSC
     
     Try {
-        Set ..ErrorTypes = pErrorTypes
-        Set ..RecoveryStrategy = pRecoveryStrategy
-        Set ..Priority = 1000  // Low priority - process after other handlers
+        // Set default values for error handler
+        Set ..ErrorTypes = ""
+        Set ..RecoveryStrategy = "LOG"
+        Set ..Priority = pPriority  // Low priority - process after other handlers
     }
     Catch ex {
         Set tSC = ex.AsStatus()

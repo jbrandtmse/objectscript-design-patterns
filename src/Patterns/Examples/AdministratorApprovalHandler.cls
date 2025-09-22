@@ -42,7 +42,7 @@ Method %OnNew() As %Status
 /// 
 /// @param pRequest The request to check
 /// @return %Boolean
-Method CanHandleSpecific(pRequest As Request) As %Boolean
+Method CanHandleSpecific(pRequest As Patterns.GoF.Behavioral.Request) As %Boolean
 {
     // Must be an approval request
     If 'pRequest.%IsA("Patterns.Examples.ApprovalRequest") Quit 0
@@ -56,16 +56,16 @@ Method CanHandleSpecific(pRequest As Request) As %Boolean
 /// 
 /// @param pRequest The request to process
 /// @return Response object
-Method ProcessSpecific(pRequest As Request) As Response
+Method ProcessSpecific(pRequest As Patterns.GoF.Behavioral.Request) As Patterns.GoF.Behavioral.Response
 {
     Set tApprovalRequest = pRequest
-    Set tResponse = ##class(Response).%New()
+    Set tResponse = ##class(Patterns.GoF.Behavioral.Response).%New()
     
     Try {
         // Validate request
         Set tSC = tApprovalRequest.Validate()
         If $$$ISERR(tSC) {
-            Set tResponse = ##class(Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
             Quit
         }
         
@@ -83,13 +83,15 @@ Method ProcessSpecific(pRequest As Request) As Response
             // Emergency always approved by administrator
             Do tApprovalRequest.AddApprover(..HandlerName, "Emergency administrator approval")
             Do tApprovalRequest.ApprovalConditions.Insert("Emergency review board meeting required within 7 days")
+            Do tApprovalRequest.ApprovalConditions.Insert("Full documentation required within 24 hours")
             
-            Set tResponse = ##class(Response).Success(
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                 "Emergency approved by " _ ..HandlerName,
                 "Emergency request approved for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
             )
             Do tResponse.SetMetadata("approvalType", "Emergency-Executive")
             Do tResponse.SetMetadata("boardReview", "Required")
+            Do tResponse.SetMetadata("fastTrack", "Emergency approval fast-tracked through administrator")
             
             // Log high-value emergency approval
             Do ..LogExecutiveApproval(tApprovalRequest)
@@ -123,7 +125,7 @@ Method ProcessSpecific(pRequest As Request) As Response
                 Do tApprovalRequest.ApprovalConditions.Insert("Monthly progress reports to executive committee")
             }
             
-            Set tResponse = ##class(Response).Success(
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                 "Approved by " _ ..HandlerName,
                 "Executive approval for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
             )
@@ -142,7 +144,7 @@ Method ProcessSpecific(pRequest As Request) As Response
             Set tReason = ..GetConfig("rejectionReason", "Does not meet executive criteria")
             Do tApprovalRequest.Reject(..HandlerName, tReason)
             
-            Set tResponse = ##class(Response).Failure("Executive rejection: " _ tReason)
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Executive rejection: " _ tReason)
             Do tResponse.SetMetadata("finalDecision", "Rejected")
             
             // Log executive rejection
@@ -150,7 +152,7 @@ Method ProcessSpecific(pRequest As Request) As Response
         }
     }
     Catch ex {
-        Set tResponse = ##class(Response).Failure("Processing error: " _ ex.Name, 500)
+        Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Processing error: " _ ex.Name, 500)
         Do tResponse.AddError(ex.Name _ " at " _ ex.Location)
     }
     
@@ -214,7 +216,7 @@ Method ReviewEscalation(pRequest As ApprovalRequest) [ Private ]
 /// Log executive approval
 /// 
 /// @param pRequest The approval request
-Method LogExecutiveApproval(pRequest As ApprovalRequest) [ Private ]
+Method LogExecutiveApproval(pRequest As ApprovalRequest)
 {
     Set tLogId = $Increment(^Patterns.Chain.ExecutiveLog)
     Set ^Patterns.Chain.ExecutiveLog(tLogId, "action") = "APPROVED"
@@ -229,7 +231,7 @@ Method LogExecutiveApproval(pRequest As ApprovalRequest) [ Private ]
 /// 
 /// @param pRequest The approval request
 /// @param pReason Rejection reason
-Method LogExecutiveRejection(pRequest As ApprovalRequest, pReason As %String) [ Private ]
+Method LogExecutiveRejection(pRequest As ApprovalRequest, pReason As %String)
 {
     Set tLogId = $Increment(^Patterns.Chain.ExecutiveLog)
     Set ^Patterns.Chain.ExecutiveLog(tLogId, "action") = "REJECTED"

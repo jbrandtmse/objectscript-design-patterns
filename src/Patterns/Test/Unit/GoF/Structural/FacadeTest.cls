@@ -3,8 +3,18 @@
 Class Patterns.Test.Unit.GoF.Structural.FacadeTest Extends %UnitTest.TestCase
 {
 
+/// Constructor - properly handle initvalue parameter from parent class
+Method %OnNew(initvalue As %String = "") As %Status
+{
+    // Call parent constructor with initvalue parameter
+    Set tSC = ##super(initvalue)
+    If $$$ISERR(tSC) Quit tSC
+    
+    Quit $$$OK
+}
+
 /// Test basic facade simplification of complex operations
-Method TestBasicFacadeOperation() As %Status
+Method TestBasicFacadeOperation()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -21,11 +31,11 @@ Method TestBasicFacadeOperation() As %Status
     Do $$$AssertEquals(tFacade.OperationCount, 1, "Operation count tracked")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade handles errors gracefully
-Method TestFacadeErrorHandling() As %Status
+Method TestFacadeErrorHandling()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -44,11 +54,11 @@ Method TestFacadeErrorHandling() As %Status
     Do $$$AssertTrue(tResult [ "REQUEST_TOO_LARGE", "Correct error for large input")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test batch processing through facade
-Method TestFacadeBatchProcessing() As %Status
+Method TestFacadeBatchProcessing()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -64,11 +74,11 @@ Method TestFacadeBatchProcessing() As %Status
     Do $$$AssertTrue(tResults.success.%Size() >= 0, "Success array exists")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade configuration changes
-Method TestFacadeConfiguration() As %Status
+Method TestFacadeConfiguration()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -87,11 +97,11 @@ Method TestFacadeConfiguration() As %Status
     Do $$$AssertStatusNotOK(tSC, "Invalid format rejected")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test direct subsystem access is still possible
-Method TestDirectSubsystemAccess() As %Status
+Method TestDirectSubsystemAccess()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -113,11 +123,11 @@ Method TestDirectSubsystemAccess() As %Status
     Do $$$AssertTrue(tDirectResult '[ "ERROR", "Direct subsystem operation works")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade advanced operations
-Method TestAdvancedOperations() As %Status
+Method TestAdvancedOperations()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -132,11 +142,11 @@ Method TestAdvancedOperations() As %Status
     Do $$$AssertTrue(tResult.%IsDefined("statistics"), "Statistics included")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade report generation
-Method TestReportGeneration() As %Status
+Method TestReportGeneration()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -154,11 +164,11 @@ Method TestReportGeneration() As %Status
     Do $$$AssertTrue(tReport [ "Unit Test", "Report contains author")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade statistics collection
-Method TestStatisticsCollection() As %Status
+Method TestStatisticsCollection()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -178,11 +188,11 @@ Method TestStatisticsCollection() As %Status
     Do $$$AssertTrue(tStats.%IsDefined("subsystemC"), "SubsystemC stats included")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test healthcare lab facade creation
-Method TestLabFacadeCreation() As %Status
+Method TestLabFacadeCreation()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -196,11 +206,11 @@ Method TestLabFacadeCreation() As %Status
     Do $$$AssertTrue($ISOBJECT(tLabFacade.ResultFormatter), "ResultFormatter initialized")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test lab test ordering through facade
-Method TestLabTestOrdering() As %Status
+Method TestLabTestOrdering()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -222,11 +232,11 @@ Method TestLabTestOrdering() As %Status
     Do $$$AssertTrue(tStatus [ "TEST:CBC", "Correct test code")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test lab result retrieval through facade
-Method TestLabResultRetrieval() As %Status
+Method TestLabResultRetrieval()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -246,11 +256,11 @@ Method TestLabResultRetrieval() As %Status
     Do $$$AssertTrue(tResults [ "LABORATORY REPORT", "Formatted as text report")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test simplified lab methods
-Method TestSimplifiedLabMethods() As %Status
+Method TestSimplifiedLabMethods()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -271,11 +281,11 @@ Method TestSimplifiedLabMethods() As %Status
     Do $$$AssertTrue(tTests [ "CMP", "CMP in available tests")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test batch processing in lab facade
-Method TestLabBatchProcessing() As %Status
+Method TestLabBatchProcessing()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -293,11 +303,11 @@ Method TestLabBatchProcessing() As %Status
     Do $$$AssertTrue(tResult [ "BATCH:COMPLETE", "Batch completed successfully")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade simplification benefit
-Method TestFacadeSimplificationBenefit() As %Status
+Method TestFacadeSimplificationBenefit()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -315,11 +325,11 @@ Method TestFacadeSimplificationBenefit() As %Status
     Do $$$AssertTrue(1 = 1, "Facade provides significant simplification")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade system statistics
-Method TestLabSystemStatistics() As %Status
+Method TestLabSystemStatistics()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -337,11 +347,11 @@ Method TestLabSystemStatistics() As %Status
     Do $$$AssertTrue(tStats.trackedOrders = 2, "Orders tracked")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test facade reset functionality
-Method TestFacadeReset() As %Status
+Method TestFacadeReset()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -359,11 +369,11 @@ Method TestFacadeReset() As %Status
     Do $$$AssertEquals(tFacade.OperationCount, 0, "Operation count reset")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test performance overhead of facade layer
-Method TestPerformanceOverhead() As %Status
+Method TestPerformanceOverhead()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -381,11 +391,11 @@ Method TestPerformanceOverhead() As %Status
     Do $$$AssertTrue(tFacadeTime < 5, "Facade operations complete within reasonable time")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Test concurrent access through facade
-Method TestConcurrentAccess() As %Status
+Method TestConcurrentAccess()
 {
     Do $$$AssertStatusOK(..SetUp(), "Test setup")
     
@@ -405,7 +415,7 @@ Method TestConcurrentAccess() As %Status
     Do $$$AssertEquals(tFacade.OperationCount, 5, "All operations tracked")
     
     Do $$$AssertStatusOK(..TearDown(), "Test cleanup")
-    Quit $$$OK
+    Quit 1
 }
 
 /// Helper method for test setup

@@ -11,3 +11,4 @@ Other things to keep in mind:
 
 * The excute_command tool can only be used with very simple commands.  Instead of creating a complex commands, create a helper class method and use the execute_classmethod tool
 * To debug instance methods, create a temporary class method that calls the instance method. You can use ^ClineDebug within the class method if desired.
+* Make sure you clean up any temporary classes after you are finished with them.

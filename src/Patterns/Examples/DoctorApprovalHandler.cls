@@ -42,7 +42,7 @@ Method %OnNew() As %Status
 /// 
 /// @param pRequest The request to check
 /// @return %Boolean
-Method CanHandleSpecific(pRequest As Request) As %Boolean
+Method CanHandleSpecific(pRequest As Patterns.GoF.Behavioral.Request) As %Boolean
 {
     // Must be an approval request
     If 'pRequest.%IsA("Patterns.Examples.ApprovalRequest") Quit 0
@@ -70,16 +70,16 @@ Method CanHandleSpecific(pRequest As Request) As %Boolean
 /// 
 /// @param pRequest The request to process
 /// @return Response object
-Method ProcessSpecific(pRequest As Request) As Response
+Method ProcessSpecific(pRequest As Patterns.GoF.Behavioral.Request) As Patterns.GoF.Behavioral.Response
 {
     Set tApprovalRequest = pRequest
-    Set tResponse = ##class(Response).%New()
+    Set tResponse = ##class(Patterns.GoF.Behavioral.Response).%New()
     
     Try {
         // Validate request
         Set tSC = tApprovalRequest.Validate()
         If $$$ISERR(tSC) {
-            Set tResponse = ##class(Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Validation failed: " _ $System.Status.GetErrorText(tSC))
             Quit
         }
         
@@ -90,7 +90,7 @@ Method ProcessSpecific(pRequest As Request) As Response
         If tApprovalRequest.ApprovalType = "Procedure" {
             // Procedures require patient ID
             If tApprovalRequest.PatientId = "" {
-                Set tResponse = ##class(Response).Failure("Procedure approvals require patient ID")
+                Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Procedure approvals require patient ID")
                 Do tApprovalRequest.Reject(..HandlerName, "Missing patient information")
                 Quit
             }
@@ -102,7 +102,7 @@ Method ProcessSpecific(pRequest As Request) As Response
                 Do tApprovalRequest.ApprovalConditions.Insert("Requires pre-authorization review")
                 Do tApprovalRequest.ApprovalConditions.Insert("Patient consent form required")
                 
-                Set tResponse = ##class(Response).Success(
+                Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                     "Conditionally approved by " _ ..HandlerName,
                     "Request conditionally approved for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
                 )
@@ -124,7 +124,7 @@ Method ProcessSpecific(pRequest As Request) As Response
                 Do tApprovalRequest.ApprovalConditions.Insert("Requires medical justification documentation")
             }
             
-            Set tResponse = ##class(Response).Success(
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Success(
                 "Approved by " _ ..HandlerName,
                 "Request approved for $" _ $FNumber(tApprovalRequest.Amount, ",", 2)
             )
@@ -137,11 +137,11 @@ Method ProcessSpecific(pRequest As Request) As Response
             }
         } Else {
             // Cannot approve - will pass to next handler
-            Set tResponse = ##class(Response).%New(0, "Amount exceeds doctor approval limit")
+            Set tResponse = ##class(Patterns.GoF.Behavioral.Response).%New(0, "Amount exceeds doctor approval limit")
         }
     }
     Catch ex {
-        Set tResponse = ##class(Response).Failure("Processing error: " _ ex.Name, 500)
+        Set tResponse = ##class(Patterns.GoF.Behavioral.Response).Failure("Processing error: " _ ex.Name, 500)
         Do tResponse.AddError(ex.Name _ " at " _ ex.Location)
     }
     
