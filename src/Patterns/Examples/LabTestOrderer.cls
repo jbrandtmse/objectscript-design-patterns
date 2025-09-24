@@ -196,20 +196,28 @@ Method checkContraindications(pPatientId As %String, pTestCode As %String) As %S
 Method calculateCollectionTime(pPriority As %String) As %String [ Private ]
 {
     Set tCurrentTime = $PIECE($HOROLOG, ",", 2)
-    Set tCollectionTime = tCurrentTime
+    Set tSecondsToAdd = 0
     
     If pPriority = "STAT" {
         // Immediate collection
-        Set tCollectionTime = tCurrentTime + 300  // 5 minutes
+        Set tSecondsToAdd = 300  // 5 minutes
     } ElseIf pPriority = "URGENT" {
         // Within 1 hour
-        Set tCollectionTime = tCurrentTime + 3600
+        Set tSecondsToAdd = 3600
     } Else {
         // Routine - within 4 hours
-        Set tCollectionTime = tCurrentTime + 14400
+        Set tSecondsToAdd = 14400
     }
     
-    // Convert to readable time
+    Set tCollectionTime = tCurrentTime + tSecondsToAdd
+    
+    // Handle day rollover - 86400 seconds in a day
+    If tCollectionTime >= 86400 {
+        // Time rolls over to next day
+        Set tCollectionTime = tCollectionTime - 86400
+    }
+    
+    // Convert to readable time - now guaranteed to be within valid range
     Set tTime = $ZTIME(tCollectionTime)
     Quit tTime
 }

@@ -26,21 +26,21 @@ Method %OnNew() As %Status
     Set tSC = $$$OK
     Try {
         // Initialize test orderer subsystem
-        Set ..TestOrderer = ##class(LabTestOrderer).%New()
+        Set ..TestOrderer = ##class(Patterns.Examples.LabTestOrderer).%New()
         If '..TestOrderer {
             Set tSC = $$$ERROR($$$GeneralError, "Failed to initialize LabTestOrderer")
             Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
         }
         
         // Initialize test processor with dependency on orderer
-        Set ..TestProcessor = ##class(LabTestProcessor).%New(..TestOrderer)
+        Set ..TestProcessor = ##class(Patterns.Examples.LabTestProcessor).%New(..TestOrderer)
         If '..TestProcessor {
             Set tSC = $$$ERROR($$$GeneralError, "Failed to initialize LabTestProcessor")
             Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
         }
         
         // Initialize result formatter with default PDF format
-        Set ..ResultFormatter = ##class(LabResultFormatter).%New("PDF")
+        Set ..ResultFormatter = ##class(Patterns.Examples.LabResultFormatter).%New("PDF")
         If '..ResultFormatter {
             Set tSC = $$$ERROR($$$GeneralError, "Failed to initialize LabResultFormatter")
             Throw ##class(%Exception.StatusException).CreateFromStatus(tSC)
@@ -239,7 +239,14 @@ Method GeneratePatientReport(pPatientId As %String, pFormat As %String = "") As 
 Method SetReportFormat(pFormat As %String) As %Status
 {
     // Simple configuration change
-    Quit ..ResultFormatter.SetFormat(pFormat)
+    If $ISOBJECT(..ResultFormatter) {
+        If $LISTFIND(..ResultFormatter.SupportedFormats, pFormat) {
+            Set ..ResultFormatter.DefaultFormat = pFormat
+            Quit $$$OK
+        }
+        Quit $$$ERROR($$$GeneralError, "Unsupported format: "_pFormat)
+    }
+    Quit $$$ERROR($$$GeneralError, "ResultFormatter not initialized")
 }
 
 /// Get system statistics - simplified view
@@ -341,14 +348,14 @@ ClassMethod DemonstrateWithoutFacade(pPatientId As %String, pTestCode As %String
         // Much more complex than: facade.OrderTest(pPatientId, pTestCode)
         
         // Step 1: Create and initialize orderer
-        Set tOrderer = ##class(LabTestOrderer).%New()
+        Set tOrderer = ##class(Patterns.Examples.LabTestOrderer).%New()
         
         // Step 2: Create test order with validation
         Set tOrderInfo = tOrderer.CreateTestOrder(pPatientId, pTestCode, "ROUTINE")
         If tOrderInfo [ "ERROR" Quit
         
         // Step 3: Create processor with dependency
-        Set tProcessor = ##class(LabTestProcessor).%New(tOrderer)
+        Set tProcessor = ##class(Patterns.Examples.LabTestProcessor).%New(tOrderer)
         
         // Step 4: Set dependency
         Do tProcessor.SetTestOrderer(tOrderer)
@@ -369,7 +376,7 @@ ClassMethod DemonstrateWithoutFacade(pPatientId As %String, pTestCode As %String
         Set tRawResults = tProcessor.GetTestResults(tSpecimenId)
         
         // Step 9: Create formatter
-        Set tFormatter = ##class(LabResultFormatter).%New("PDF")
+        Set tFormatter = ##class(Patterns.Examples.LabResultFormatter).%New("PDF")
         
         // Step 10: Set dependencies
         Do tFormatter.SetSubsystems(tOrderer, tProcessor)
@@ -390,7 +397,7 @@ ClassMethod CreateLabFacade() As SimplifiedLabFacade
     Set tFacade = ""
     
     Try {
-        Set tFacade = ##class(SimplifiedLabFacade).%New()
+        Set tFacade = ##class(Patterns.Examples.SimplifiedLabFacade).%New()
     }
     Catch ex {
         Set tFacade = ""
