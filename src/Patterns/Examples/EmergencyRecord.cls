@@ -281,4 +281,43 @@ Method GetRecordSummary() As %String
     Quit summary
 }
 
+Storage Default
+{
+<Data name="EmergencyRecordDefaultData">
+<Subscript>"EmergencyRecord"</Subscript>
+<Value name="1">
+<Value>TriageLevel</Value>
+</Value>
+<Value name="2">
+<Value>ChiefComplaint</Value>
+</Value>
+<Value name="3">
+<Value>ArrivalTime</Value>
+</Value>
+<Value name="4">
+<Value>ArrivalMode</Value>
+</Value>
+<Value name="5">
+<Value>VitalSigns</Value>
+</Value>
+<Value name="6">
+<Value>SeverityIndex</Value>
+</Value>
+<Value name="7">
+<Value>Severity</Value>
+</Value>
+<Value name="8">
+<Value>Disposition</Value>
+</Value>
+<Value name="9">
+<Value>TraumaAlert</Value>
+</Value>
+<Value name="10">
+<Value>WaitTimeMinutes</Value>
+</Value>
+</Data>
+<DefaultData>EmergencyRecordDefaultData</DefaultData>
+<Type>%Storage.Persistent</Type>
+}
+
 }

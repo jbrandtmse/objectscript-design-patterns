@@ -258,4 +258,34 @@ Method CopaySet(pValue As %Decimal) As %Status
     Quit $$$OK
 }
 
+Storage Default
+{
+<Data name="OutpatientRecordDefaultData">
+<Subscript>"OutpatientRecord"</Subscript>
+<Value name="1">
+<Value>VisitType</Value>
+</Value>
+<Value name="2">
+<Value>AppointmentTime</Value>
+</Value>
+<Value name="3">
+<Value>VisitReason</Value>
+</Value>
+<Value name="4">
+<Value>ReferralSource</Value>
+</Value>
+<Value name="5">
+<Value>FollowUpRequired</Value>
+</Value>
+<Value name="6">
+<Value>NextAppointmentDate</Value>
+</Value>
+<Value name="7">
+<Value>CopayAmount</Value>
+</Value>
+</Data>
+<DefaultData>OutpatientRecordDefaultData</DefaultData>
+<Type>%Storage.Persistent</Type>
+}
+
 }

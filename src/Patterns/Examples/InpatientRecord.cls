@@ -128,4 +128,28 @@ Method AssignRoom(pRoomNumber As %String, pBedNumber As %String) As %Status
     Quit tSC
 }
 
+Storage Default
+{
+<Data name="InpatientRecordDefaultData">
+<Subscript>"InpatientRecord"</Subscript>
+<Value name="1">
+<Value>RoomNumber</Value>
+</Value>
+<Value name="2">
+<Value>BedNumber</Value>
+</Value>
+<Value name="3">
+<Value>AdmissionDiagnosis</Value>
+</Value>
+<Value name="4">
+<Value>ExpectedLengthOfStay</Value>
+</Value>
+<Value name="5">
+<Value>AuthorizationCode</Value>
+</Value>
+</Data>
+<DefaultData>InpatientRecordDefaultData</DefaultData>
+<Type>%Storage.Persistent</Type>
+}
+
 }

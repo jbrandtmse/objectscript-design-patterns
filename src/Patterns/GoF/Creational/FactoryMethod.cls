@@ -70,6 +70,9 @@ Method FactoryMethod(pType As %String = "") As Patterns.GoF.Creational.Product
 /// @return Product instance
 Method CreateProduct(pType As %String) As Patterns.GoF.Creational.Product [ Abstract ]
 {
+    // Abstract method - must return null object reference
+    // Concrete subclasses will override with actual implementation
+    Quit $$$NULLOREF
 }
 
 /// Initialize the factory with optional configuration

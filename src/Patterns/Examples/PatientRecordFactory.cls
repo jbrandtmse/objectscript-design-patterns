@@ -22,6 +22,8 @@ Property DefaultDepartment As %String;
 Method CreateRecord() As Patterns.Examples.PatientRecord [ Abstract ]
 {
     // Abstract method - must be implemented by subclasses
+    // Return null object - concrete subclasses will override
+    Quit $$$NULLOREF
 }
 
 /// Factory method that uses the abstract CreateRecord to produce patient records

@@ -32,6 +32,8 @@ Method Initialize() As %Status
 Method Operation() As %String [ Abstract ]
 {
     // Abstract method - must be implemented by subclasses
+    // Return empty string - concrete implementations will override
+    Quit ""
 }
 
 /// Get product description
