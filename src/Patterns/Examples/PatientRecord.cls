@@ -1,285 +1,360 @@
-/// Healthcare Example - Patient Record Persistent Class
-/// Demonstrates Iterator Pattern with patient data
-/// Also serves as base class for Factory Method pattern examples
-Class Patterns.Examples.PatientRecord Extends %Persistent [ Abstract ]
+/// Healthcare Patient Record - Concrete Medical Record for Visitor Pattern Example
+/// 
+/// This class represents a patient's demographic and basic health information.
+/// It demonstrates how the Visitor pattern enables different operations
+/// (audit, billing, statistics, export) without modifying the record structure.
+/// 
+/// <example>
+/// Set patient = ##class(Patterns.Examples.PatientRecord).%New()
+/// Do patient.SetPatientInfo("12345", "John", "Doe", "1980-01-15")
+/// Set auditVisitor = ##class(Patterns.Examples.AuditVisitor).%New()
+/// Do patient.Accept(auditVisitor)
+/// </example>
+/// 
+/// @see Patterns.Examples.MedicalRecordElement
+/// @see Patterns.Examples.AuditVisitor
+/// @since 1.0.0
+Class Patterns.Examples.PatientRecord Extends Patterns.Examples.MedicalRecordElement [ Abstract ]
 {
 
-/// Unique identifier for this record
-Property RecordID As %String;
+/// Patient's first name
+Property FirstName As %String;
 
-/// Record type (Inpatient, Outpatient, Emergency)
-Property RecordType As %String;
+/// Patient's last name
+Property LastName As %String;
 
-/// Record priority level
-Property Priority As %String;
-
-/// Patient full name (for Factory Method pattern compatibility)
-Property PatientName As %String(MAXLEN = 100);
-
-/// Patient Medical Record Number (alternative property name)
-Property PatientMRN As %String(MAXLEN = 20);
-
-/// Patient Medical Record Number (original property for Iterator pattern)
-Property MRN As %String(MAXLEN = 20) [ Required ];
-
-/// Patient First Name
-Property FirstName As %String(MAXLEN = 50) [ Required ];
-
-/// Patient Last Name
-Property LastName As %String(MAXLEN = 50) [ Required ];
-
-/// Date of Birth
+/// Date of birth
 Property DateOfBirth As %Date;
 
-/// Gender
-Property Gender As %String(VALUELIST = ",M,F,O,U");
+/// Gender (M/F/O/U)
+Property Gender As %String;
 
-/// Primary Department
-Property Department As %String(MAXLEN = 50);
+/// Social Security Number (encrypted/masked)
+Property SSN As %String;
 
-/// Primary Diagnosis Code
-Property DiagnosisCode As %String(MAXLEN = 10);
+/// Insurance ID
+Property InsuranceId As %String;
 
-/// Admission Date
-Property AdmissionDate As %TimeStamp;
+/// Emergency contact name
+Property EmergencyContact As %String;
 
-/// Discharge Date
-Property DischargeDate As %TimeStamp;
+/// Emergency contact phone
+Property EmergencyPhone As %String;
 
-/// Patient Status
-Property Status As %String(VALUELIST = ",Active,Discharged,Transferred,Deceased");
+/// Primary diagnosis codes (ICD-10)
+Property DiagnosisCodes As %String;
 
-/// Last Visit Date
-Property LastVisitDate As %TimeStamp;
+/// Current medications list
+Property CurrentMedications As %String;
 
-/// Attending Physician
-Property AttendingPhysician As %String(MAXLEN = 100);
+/// Allergies information
+Property Allergies As %String;
 
-/// Attending Provider (alternative name for Factory Method pattern)
-Property AttendingProvider As %String(MAXLEN = 100);
+/// Patient Name (legacy property for Factory Method compatibility)
+Property PatientName As %String;
 
-/// Insurance Provider
-Property InsuranceProvider As %String(MAXLEN = 100);
+/// Patient MRN (Medical Record Number)
+Property PatientMRN As %String;
 
-/// Emergency Contact
-Property EmergencyContact As %String(MAXLEN = 200);
-
-/// HIPAA Consent
-Property HIPAAConsent As %Boolean [ InitialExpression = 0 ];
-
-/// Unique index on MRN
-Index MRNIndex On MRN [ Unique ];
-
-/// Index on Department for filtering
-Index DepartmentIndex On Department;
-
-/// Index on Diagnosis Code for filtering
-Index DiagnosisIndex On DiagnosisCode;
-
-/// Index on Admission Date for date range queries
-Index AdmissionDateIndex On AdmissionDate;
-
-/// Index on Status
-Index StatusIndex On Status;
-
-/// Create sample patient records for testing
-ClassMethod CreateSampleData() As %Status
+/// Constructor - initialize patient record
+Method %OnNew(initvalue As %String = "") As %Status
 {
-        Set tSC = $$$OK
-        Try {
-            // Clear existing data
-            Do ..%KillExtent()
-            
-            // Sample departments
-            Set tDepts = $LISTBUILD("Emergency", "Cardiology", "Oncology", "Pediatrics", "Orthopedics")
-            
-            // Sample diagnosis codes (ICD-10)
-            Set tDiagnoses = $LISTBUILD("I21.9", "J44.0", "E11.9", "N18.9", "M79.3")
-            
-            // Sample physicians
-            Set tPhysicians = $LISTBUILD("Dr. Smith", "Dr. Johnson", "Dr. Williams", "Dr. Brown", "Dr. Davis")
-            
-            // Create 50 sample patients
-            For i=1:1:50 {
-                Set tPatient = ..%New()
-                Set tPatient.MRN = "MRN"_$JUSTIFY(i, 5, 0)
-                Set tPatient.FirstName = "Patient"_i
-                Set tPatient.LastName = "Test"_i
-                Set tPatient.DateOfBirth = $HOROLOG - (365 * (20 + $RANDOM(60)))
-                Set tPatient.Gender = $SELECT($RANDOM(2):"M", 1:"F")
-                Set tPatient.Department = $LIST(tDepts, ($RANDOM(5) + 1))
-                Set tPatient.DiagnosisCode = $LIST(tDiagnoses, ($RANDOM(5) + 1))
-                Set tPatient.AdmissionDate = $ZDATETIME($HOROLOG - $RANDOM(30), 3)
-                
-                // 70% discharged
-                If $RANDOM(10) < 7 {
-                    Set tPatient.Status = "Discharged"
-                    Set tPatient.DischargeDate = $ZDATETIME($HOROLOG - $RANDOM(7), 3)
-                } Else {
-                    Set tPatient.Status = "Active"
-                }
-                
-                Set tPatient.LastVisitDate = $ZDATETIME($HOROLOG - $RANDOM(7), 3)
-                Set tPatient.AttendingPhysician = $LIST(tPhysicians, ($RANDOM(5) + 1))
-                Set tPatient.InsuranceProvider = "Insurance Co "_($RANDOM(5) + 1)
-                Set tPatient.EmergencyContact = "Contact "_i_" - 555-"_$JUSTIFY($RANDOM(9999), 4, 0)
-                Set tPatient.HIPAAConsent = 1
-                
-                Set tSC = tPatient.%Save()
-                If $$$ISERR(tSC) Quit
-            }
-        }
-        Catch ex {
-            Set tSC = ex.AsStatus()
-        }
-        Quit tSC
+    Set tSC = ##super(initvalue)
+    If $$$ISERR(tSC) Quit tSC
+    
+    Set ..RecordType = "PatientRecord"
+    Set ..SecurityLevel = "HighlyConfidential"  // Patient records are highly sensitive
+    
+    // Initialize compatibility properties
+    Do ..SyncPatientProperties()
+    
+    Quit $$$OK
 }
 
-/// Get patient count by department
-ClassMethod GetCountByDepartment(pDepartment As %String) As %Integer
-{
-        Set tCount = 0
-        &SQL(SELECT COUNT(*) INTO :tCount FROM PatientRecord WHERE Department = :pDepartment)
-        Quit tCount
-}
-
-/// Get active patient count
-ClassMethod GetActiveCount() As %Integer
-{
-        Set tCount = 0
-        &SQL(SELECT COUNT(*) INTO :tCount FROM PatientRecord WHERE Status = 'Active')
-        Quit tCount
-}
-
-/// Initialize the patient record (abstract method for Factory Method pattern)
+/// Initialize patient record - override for Factory Method compatibility
+/// @return %Status indicating success or failure
 Method Initialize() As %Status
 {
-        Set tSC = $$$OK
-        
-        // Set default values
-        If ..PatientMRN = "" {
-            Set ..PatientMRN = "MRN" _ $RANDOM(99999)
-        }
-        
-        If ..PatientName = "" {
-            Set ..PatientName = "Unnamed Patient"
-        }
-        
-        // Sync MRN and PatientMRN for compatibility
-        If ..MRN = "" Set ..MRN = ..PatientMRN
-        If ..PatientMRN = "" Set ..PatientMRN = ..MRN
-        
-        Quit tSC
-}
-
-/// Process the patient record (abstract method for Factory Method pattern)
-Method ProcessRecord() As %String [ Abstract ]
-{
-        // Abstract method - must be implemented by subclasses
-        Quit ""
-}
-
-/// Validate the patient record (abstract method for Factory Method pattern)
-Method ValidateRecord() As %Status [ Abstract ]
-{
-        // Abstract method - must be implemented by subclasses
-        Quit $$$OK
-}
-
-/// Get detailed record summary
-/// <p>Base implementation that provides common patient information.</p>
-/// <returns>Formatted string with patient record details</returns>
-Method GetRecordSummary() As %String
-{
-    Set summary = "================================" _ $Char(13,10)
-    Set summary = summary _ "Patient Record Summary" _ $Char(13,10)
-    Set summary = summary _ "================================" _ $Char(13,10)
-    Set summary = summary _ "Record Type: " _ ..RecordType _ $Char(13,10)
-    Set summary = summary _ "Priority: " _ ..Priority _ $Char(13,10)
-    Set summary = summary _ "Patient: " _ ..PatientName _ $Char(13,10)
-    Set summary = summary _ "MRN: " _ ..PatientMRN _ $Char(13,10)
-    Set summary = summary _ "Department: " _ ..Department _ $Char(13,10)
-    Set summary = summary _ "Provider: " _ ..AttendingProvider _ $Char(13,10)
+    Set tSC = ##super()
+    If $$$ISERR(tSC) Quit tSC
     
-    Quit summary
+    // Patient-specific initialization
+    Set ..RecordType = "PatientRecord"
+    Set ..SecurityLevel = "HighlyConfidential"
+    
+    // Sync patient properties for compatibility
+    Do ..SyncPatientProperties()
+    
+    Quit $$$OK
 }
 
-Storage Default
+/// Sync patient properties for Factory Method compatibility
+Method SyncPatientProperties() [ Private ]
 {
-<Data name="PatientRecordDefaultData">
-<Value name="1">
-<Value>%%CLASSNAME</Value>
-</Value>
-<Value name="2">
-<Value>MRN</Value>
-</Value>
-<Value name="3">
-<Value>FirstName</Value>
-</Value>
-<Value name="4">
-<Value>LastName</Value>
-</Value>
-<Value name="5">
-<Value>DateOfBirth</Value>
-</Value>
-<Value name="6">
-<Value>Gender</Value>
-</Value>
-<Value name="7">
-<Value>Department</Value>
-</Value>
-<Value name="8">
-<Value>DiagnosisCode</Value>
-</Value>
-<Value name="9">
-<Value>AdmissionDate</Value>
-</Value>
-<Value name="10">
-<Value>DischargeDate</Value>
-</Value>
-<Value name="11">
-<Value>Status</Value>
-</Value>
-<Value name="12">
-<Value>LastVisitDate</Value>
-</Value>
-<Value name="13">
-<Value>AttendingPhysician</Value>
-</Value>
-<Value name="14">
-<Value>InsuranceProvider</Value>
-</Value>
-<Value name="15">
-<Value>EmergencyContact</Value>
-</Value>
-<Value name="16">
-<Value>HIPAAConsent</Value>
-</Value>
-<Value name="17">
-<Value>RecordType</Value>
-</Value>
-<Value name="18">
-<Value>Priority</Value>
-</Value>
-<Value name="19">
-<Value>PatientName</Value>
-</Value>
-<Value name="20">
-<Value>PatientMRN</Value>
-</Value>
-<Value name="21">
-<Value>AttendingProvider</Value>
-</Value>
-<Value name="22">
-<Value>RecordID</Value>
-</Value>
-</Data>
-<DataLocation>^Patterns.Exa5324.PatientRecordD</DataLocation>
-<DefaultData>PatientRecordDefaultData</DefaultData>
-<IdLocation>^Patterns.Exa5324.PatientRecordD</IdLocation>
-<IndexLocation>^Patterns.Exa5324.PatientRecordI</IndexLocation>
-<StreamLocation>^Patterns.Exa5324.PatientRecordS</StreamLocation>
-<Type>%Storage.Persistent</Type>
+    // Sync PatientName with FirstName/LastName
+    If ..PatientName = "" && (..FirstName '= "" || ..LastName '= "") {
+        Set ..PatientName = ..GetFullName()
+    }
+    
+    // Sync PatientMRN with PatientId
+    If ..PatientMRN = "" && ..PatientId '= "" {
+        Set ..PatientMRN = ..PatientId
+    }
+    If ..PatientId = "" && ..PatientMRN '= "" {
+        Set ..PatientId = ..PatientMRN
+    }
+}
+
+/// Accept a visitor - implements double dispatch for patient records
+/// Calls the appropriate visitor method for patient record analysis
+/// 
+/// @param pVisitor The visitor to accept
+/// @return %Status indicating success or failure
+Method Accept(pVisitor As Patterns.GoF.Behavioral.Visitor) As %Status
+{
+    Set tSC = $$$OK
+    
+    Try {
+        // Double dispatch - tell visitor this is a PatientRecord
+        Set tSC = pVisitor.VisitPatientRecord($this)
+    }
+    Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    
+    Quit tSC
+}
+
+/// Set patient demographic information
+/// 
+/// @param pPatientId Unique patient identifier
+/// @param pFirstName Patient's first name
+/// @param pLastName Patient's last name
+/// @param pDateOfBirth Date of birth (YYYY-MM-DD format)
+/// @return %Status indicating success or failure
+Method SetPatientInfo(pPatientId As %String, pFirstName As %String, pLastName As %String, pDateOfBirth As %String) As %Status
+{
+    Set tSC = $$$OK
+    
+    Try {
+        Set ..PatientId = pPatientId
+        Set ..FirstName = pFirstName
+        Set ..LastName = pLastName
+        
+        // Update compatibility properties
+        Set ..PatientMRN = pPatientId
+        Set ..PatientName = ..GetFullName()
+        
+        // Convert date string to %Date - handle YYYY-MM-DD format
+        If pDateOfBirth '= "" {
+            // Parse YYYY-MM-DD manually and convert to $HOROLOG format
+            Set tYear = $PIECE(pDateOfBirth, "-", 1)
+            Set tMonth = $PIECE(pDateOfBirth, "-", 2)
+            Set tDay = $PIECE(pDateOfBirth, "-", 3)
+            
+            // Use simple calculation: days since 1841-01-01 (ObjectScript epoch)
+            Set tBaseYear = 1841
+            Set tDays = 0
+            
+            // Add days for complete years
+            For tY = tBaseYear:1:(tYear-1) {
+                Set tDays = tDays + $SELECT(((tY#4=0)&&(tY#100'=0))||(tY#400=0):366, 1:365)
+            }
+            
+            // Add days for complete months in the target year
+            Set tIsLeap = $SELECT(((tYear#4=0)&&(tYear#100'=0))||(tYear#400=0):1, 1:0)
+            Set tMonthDays = "31,28,31,30,31,30,31,31,30,31,30,31"
+            If tIsLeap Set $PIECE(tMonthDays, ",", 2) = "29"
+            
+            For tM = 1:1:(tMonth-1) {
+                Set tDays = tDays + $PIECE(tMonthDays, ",", tM)
+            }
+            
+            // Add remaining days
+            Set tDays = tDays + tDay - 1
+            
+            Set ..DateOfBirth = tDays
+        }
+        
+        Do ..Touch()  // Update modification timestamp
+    }
+    Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    
+    Quit tSC
+}
+
+/// Get patient's full name
+/// 
+/// @return %String Full name
+Method GetFullName() As %String
+{
+    Quit ..FirstName_" "_..LastName
+}
+
+/// Calculate patient's age
+/// 
+/// @return %Integer Age in years
+Method GetAge() As %Integer
+{
+    If ..DateOfBirth = "" Quit 0
+    
+    Set tToday = +$HOROLOG
+    Set tBirthDate = +..DateOfBirth
+    
+    // Simple age calculation in days, then convert to years
+    Set tAgeDays = tToday - tBirthDate
+    Set tAge = tAgeDays \ 365.25  // Account for leap years
+    
+    Quit tAge
+}
+
+/// Get patient's data for visitor processing
+/// Returns patient demographic information
+/// 
+/// @return %String Patient data
+Method GetData() As %String
+{
+    Quit "Patient: "_..GetFullName()_", Age: "_..GetAge()_", Gender: "_..Gender_", DOB: "_$ZDATE(..DateOfBirth, 5)
+}
+
+/// Add diagnosis code
+/// 
+/// @param pCode ICD-10 diagnosis code
+/// @return %Status indicating success or failure
+Method AddDiagnosisCode(pCode As %String) As %Status
+{
+    If ..DiagnosisCodes = "" {
+        Set ..DiagnosisCodes = pCode
+    } Else {
+        Set ..DiagnosisCodes = ..DiagnosisCodes_","_pCode
+    }
+    
+    Do ..Touch()
+    Quit $$$OK
+}
+
+/// Add current medication
+/// 
+/// @param pMedication Medication name and dosage
+/// @return %Status indicating success or failure
+Method AddMedication(pMedication As %String) As %Status
+{
+    If ..CurrentMedications = "" {
+        Set ..CurrentMedications = pMedication
+    } Else {
+        Set ..CurrentMedications = ..CurrentMedications_";"_pMedication
+    }
+    
+    Do ..Touch()
+    Quit $$$OK
+}
+
+/// Add allergy information
+/// 
+/// @param pAllergy Allergy description
+/// @return %Status indicating success or failure
+Method AddAllergy(pAllergy As %String) As %Status
+{
+    If ..Allergies = "" {
+        Set ..Allergies = pAllergy
+    } Else {
+        Set ..Allergies = ..Allergies_";"_pAllergy
+    }
+    
+    Do ..Touch()
+    Quit $$$OK
+}
+
+/// Check if patient is a minor
+/// 
+/// @return %Boolean True if patient is under 18
+Method IsMinor() As %Boolean
+{
+    Quit (..GetAge() < 18)
+}
+
+/// Get insurance information for billing
+/// 
+/// @return %String Insurance details
+Method GetInsuranceInfo() As %String
+{
+    Quit "Insurance ID: "_..InsuranceId
+}
+
+/// Validate patient record data
+/// Enhanced validation for patient records
+/// 
+/// @return %Status indicating validation result
+Method ValidateRecord() As %Status
+{
+    Set tSC = ##super()  // Call parent validation
+    If $$$ISERR(tSC) Quit tSC
+    
+    Try {
+        // Patient-specific validations
+        If ..FirstName = "" {
+            Set tSC = $$$ERROR($$$GeneralError, "First name is required")
+            Quit
+        }
+        
+        If ..LastName = "" {
+            Set tSC = $$$ERROR($$$GeneralError, "Last name is required")
+            Quit
+        }
+        
+        If ..DateOfBirth = "" {
+            Set tSC = $$$ERROR($$$GeneralError, "Date of birth is required")
+            Quit
+        }
+        
+        // Validate gender
+        If ..Gender '= "" && ("MFOU"'[..Gender) {
+            Set tSC = $$$ERROR($$$GeneralError, "Invalid gender: "_..Gender_" (must be M, F, O, or U)")
+            Quit
+        }
+        
+        // Check age reasonableness
+        Set tAge = ..GetAge()
+        If tAge < 0 || tAge > 150 {
+            Set tSC = $$$ERROR($$$GeneralError, "Invalid age: "_tAge)
+            Quit
+        }
+    }
+    Catch ex {
+        Set tSC = ex.AsStatus()
+    }
+    
+    Quit tSC
+}
+
+/// Clone patient record
+/// Creates a copy of the patient record with new ID
+/// 
+/// @return Element A clone of this patient record
+Method Clone() As Patterns.GoF.Behavioral.Element [ Abstract ]
+{
+    Quit $$$NULLOREF
+}
+
+/// Get demographics summary for reporting
+/// 
+/// @return %DynamicObject Demographics data
+Method GetDemographics() As %DynamicObject
+{
+    Set tDemo = ##class(%DynamicObject).%New()
+    Do tDemo.%Set("patientId", ..PatientId)
+    Do tDemo.%Set("fullName", ..GetFullName())
+    Do tDemo.%Set("age", ..GetAge())
+    Do tDemo.%Set("gender", ..Gender)
+    Do tDemo.%Set("isMinor", ..IsMinor())
+    Do tDemo.%Set("hasInsurance", (..InsuranceId '= ""))
+    Do tDemo.%Set("diagnosisCount", $LENGTH(..DiagnosisCodes, ","))
+    Do tDemo.%Set("medicationCount", $LENGTH(..CurrentMedications, ";"))
+    Do tDemo.%Set("allergyCount", $LENGTH(..Allergies, ";"))
+    
+    Quit tDemo
 }
 
 }

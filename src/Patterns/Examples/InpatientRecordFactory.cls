@@ -15,8 +15,8 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         // Create a new inpatient record
         Set record = ##class(Patterns.Examples.InpatientRecord).%New()
         
-        // Generate unique RecordID with timestamp and random component
-        Set record.RecordID = "IP-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
+        // Generate unique RecordId with timestamp and random component
+        Set record.RecordId = "IP-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
         
         // Set inpatient-specific defaults
         Set record.RecordType = "INPATIENT"
@@ -31,9 +31,9 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         Set record.AuthorizationCode = ..GenerateAuthCode()
         
         // Register in global for tracking
-        If record.RecordID '= "" {
-            Set ^PatientRecordRegistry(record.RecordID, "Type") = record.RecordType
-            Set ^PatientRecordRegistry(record.RecordID, "Created") = $ZDT($H, 3)
+        If record.RecordId '= "" {
+            Set ^PatientRecordRegistry(record.RecordId, "Type") = record.RecordType
+            Set ^PatientRecordRegistry(record.RecordId, "Created") = $ZDT($H, 3)
         }
         
         Quit record

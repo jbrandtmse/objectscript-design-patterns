@@ -15,8 +15,8 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         // Create a new emergency record
         Set record = ##class(Patterns.Examples.EmergencyRecord).%New()
         
-        // Generate unique RecordID with timestamp and random component
-        Set record.RecordID = "ER-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
+        // Generate unique RecordId with timestamp and random component
+        Set record.RecordId = "ER-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
         
         // Set emergency-specific defaults
         Set record.RecordType = "EMERGENCY"
@@ -49,9 +49,9 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         Set record.Priority = 11 - (record.TriageLevel * 2)  // Level 1 = Priority 9, Level 5 = Priority 1
         
         // Register the record in the global registry
-        If record.RecordID '= "" {
-            Set ^PatientRecordRegistry(record.RecordID, "Type") = record.RecordType
-            Set ^PatientRecordRegistry(record.RecordID, "Created") = $ZDT($H, 3)
+        If record.RecordId '= "" {
+            Set ^PatientRecordRegistry(record.RecordId, "Type") = record.RecordType
+            Set ^PatientRecordRegistry(record.RecordId, "Created") = $ZDT($H, 3)
         }
         
         Quit record

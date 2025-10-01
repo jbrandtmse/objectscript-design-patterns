@@ -203,8 +203,8 @@ Method TestFactoryCreatesUniqueRecords() As %Status
     Do $$$AssertTrue(record1 '= record3, "Record 1 and 3 are different objects")
     
     // Each should have unique IDs
-    Do $$$AssertNotEquals(record1.RecordID, record2.RecordID, "Unique record IDs 1-2")
-    Do $$$AssertNotEquals(record2.RecordID, record3.RecordID, "Unique record IDs 2-3")
+    Do $$$AssertNotEquals(record1.RecordId, record2.RecordId, "Unique record IDs 1-2")
+    Do $$$AssertNotEquals(record2.RecordId, record3.RecordId, "Unique record IDs 2-3")
     
     Quit $$$OK
 }
@@ -224,13 +224,13 @@ Method TestFactoryRegistry() As %Status
     Set record3 = inpatientFactory.CreateRecord()
     
     // Check registry
-    Do $$$AssertTrue($Data(^PatientRecordRegistry(record1.RecordID)), "Record 1 in registry")
-    Do $$$AssertTrue($Data(^PatientRecordRegistry(record2.RecordID)), "Record 2 in registry")
-    Do $$$AssertTrue($Data(^PatientRecordRegistry(record3.RecordID)), "Record 3 in registry")
+    Do $$$AssertTrue($Data(^PatientRecordRegistry(record1.RecordId)), "Record 1 in registry")
+    Do $$$AssertTrue($Data(^PatientRecordRegistry(record2.RecordId)), "Record 2 in registry")
+    Do $$$AssertTrue($Data(^PatientRecordRegistry(record3.RecordId)), "Record 3 in registry")
     
     // Verify registry data
-    Do $$$AssertEquals(^PatientRecordRegistry(record1.RecordID, "Type"), "INPATIENT", "Record 1 type in registry")
-    Do $$$AssertEquals(^PatientRecordRegistry(record2.RecordID, "Type"), "OUTPATIENT", "Record 2 type in registry")
+    Do $$$AssertEquals(^PatientRecordRegistry(record1.RecordId, "Type"), "INPATIENT", "Record 1 type in registry")
+    Do $$$AssertEquals(^PatientRecordRegistry(record2.RecordId, "Type"), "OUTPATIENT", "Record 2 type in registry")
     
     // Clean up
     Kill ^PatientRecordRegistry

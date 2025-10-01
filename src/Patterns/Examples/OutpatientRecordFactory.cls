@@ -15,8 +15,8 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         // Create a new outpatient record
         Set record = ##class(Patterns.Examples.OutpatientRecord).%New()
         
-        // Generate unique RecordID with timestamp and random component
-        Set record.RecordID = "OP-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
+        // Generate unique RecordId with timestamp and random component
+        Set record.RecordId = "OP-" _ $ZDT($H, 8) _ "-" _ $Random(10000)
         
         // Set outpatient-specific defaults
         Set record.RecordType = "OUTPATIENT"
@@ -37,9 +37,9 @@ Method CreateRecord() As Patterns.Examples.PatientRecord
         }
         
         // Register in global for tracking
-        If record.RecordID '= "" {
-            Set ^PatientRecordRegistry(record.RecordID, "Type") = record.RecordType
-            Set ^PatientRecordRegistry(record.RecordID, "Created") = $ZDT($H, 3)
+        If record.RecordId '= "" {
+            Set ^PatientRecordRegistry(record.RecordId, "Type") = record.RecordType
+            Set ^PatientRecordRegistry(record.RecordId, "Created") = $ZDT($H, 3)
         }
         
         Quit record
