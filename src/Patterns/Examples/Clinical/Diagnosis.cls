@@ -1,8 +1,8 @@
 /// Healthcare Diagnosis Domain Object
-///
+/// 
 /// Represents a medical diagnosis with ICD-10 codes and clinical rules.
 /// Encapsulates diagnosis-specific business logic and validation.
-///
+/// 
 /// @see Patterns.Examples.Clinical.MedicalRecord
 /// @since 1.0.0
 Class Patterns.Examples.Clinical.Diagnosis Extends Patterns.PoEAA.DomainLogic.DomainModel

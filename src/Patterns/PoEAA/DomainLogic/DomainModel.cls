@@ -1,14 +1,14 @@
 /// PoEAA Domain Model Pattern - Rich Business Objects with Encapsulated Behavior
-///
+/// 
 /// Intent:
 /// Create a rich object model that contains both business data and business logic,
 /// with objects that encapsulate behavior and maintain their own invariants.
-///
+/// 
 /// Motivation:
 /// As business logic grows more complex, procedural Transaction Scripts become harder
 /// to maintain. Domain Model organizes business logic into a network of interconnected
 /// objects that mirror the problem domain, making the code more maintainable and testable.
-///
+/// 
 /// Applicability:
 /// Use Domain Model when:
 /// - You have complex business logic with many rules and interactions
@@ -16,12 +16,12 @@
 /// - You need rich object behaviors beyond simple data holders
 /// - The domain model provides clear conceptual clarity
 /// - You need to unit test business logic in isolation from database
-///
+/// 
 /// Structure:
 /// Domain objects are rich with both data and behavior. They validate their own
 /// invariants and encapsulate business rules. Objects form a network of relationships
 /// that model the problem domain.
-///
+/// 
 /// @see Patterns.PoEAA.DomainLogic.TransactionScript
 /// @since 1.0.0
 Class Patterns.PoEAA.DomainLogic.DomainModel Extends %RegisteredObject [ Abstract ]
