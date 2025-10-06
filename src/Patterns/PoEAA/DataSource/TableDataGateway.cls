@@ -122,19 +122,40 @@ ClassMethod FindWhere(pWhereClause As %String, ByRef pParams) As %ListOfDataType
 }
 
 /// Insert new record
-/// @param pData %DynamicObject containing field names and values to insert
+/// @param pData %DynamicObject or JSON string containing field names and values to insert
 /// @return ID of newly inserted record, or empty string on failure
-ClassMethod Insert(pData As %DynamicObject) As %String
+ClassMethod Insert(pData) As %String
 {
     Set tId = ""
+    Set ^ClineDebug = ^ClineDebug _ "Insert START; "
     
     Try {
+        Set ^ClineDebug = ^ClineDebug _ "pData type=" _ $IsObject(pData) _ "; "
+        
+        // Convert JSON string to %DynamicObject if needed
+        Set tDataObj = pData
+        If '$IsObject(pData) {
+            Set ^ClineDebug = ^ClineDebug _ "Parsing JSON string; "
+            // pData is a JSON string, parse it
+            Set tDataObj = ##class(%DynamicObject).%FromJSON(pData)
+            Set ^ClineDebug = ^ClineDebug _ "Parsed OK=" _ $IsObject(tDataObj) _ "; "
+        } Else {
+            Set ^ClineDebug = ^ClineDebug _ "pData is object; "
+        }
+        
+        // Validate we now have an object
+        If '$IsObject(tDataObj) {
+            Set ^ClineDebug = ^ClineDebug _ "tDataObj validation FAILED; "
+            Quit
+        }
+        Set ^ClineDebug = ^ClineDebug _ "tDataObj valid; "
+        
         // Build column and value lists
         Set tColumns = ""
         Set tPlaceholders = ""
         Set tValues = ##class(%ListOfDataTypes).%New()
         
-        Set tIterator = pData.%GetIterator()
+        Set tIterator = tDataObj.%GetIterator()
         While tIterator.%GetNext(.tKey, .tValue) {
             If tColumns '= "" {
                 Set tColumns = tColumns _ ", "
@@ -144,7 +165,9 @@ ClassMethod Insert(pData As %DynamicObject) As %String
             Set tPlaceholders = tPlaceholders _ "?"
             Do tValues.Insert(tValue)
         }
+        Set ^ClineDebug = ^ClineDebug _ "Columns=" _ tColumns _ "; "
         
+        // Execute INSERT
         Set tStatement = ##class(%SQL.Statement).%New()
         Set tSQL = "INSERT INTO " _ ..#TABLENAME _ " (" _ tColumns _ ") VALUES (" _ tPlaceholders _ ")"
         Set tStatus = tStatement.%Prepare(tSQL)
@@ -152,6 +175,7 @@ ClassMethod Insert(pData As %DynamicObject) As %String
         If $$$ISOK(tStatus) {
             // Execute with parameters
             Set tParamCount = tValues.Count()
+            
             If tParamCount = 1 {
                 Set tResult = tStatement.%Execute(tValues.GetAt(1))
             } ElseIf tParamCount = 2 {
@@ -162,37 +186,63 @@ ClassMethod Insert(pData As %DynamicObject) As %String
                 Set tResult = tStatement.%Execute(tValues.GetAt(1), tValues.GetAt(2), tValues.GetAt(3), tValues.GetAt(4))
             } ElseIf tParamCount = 5 {
                 Set tResult = tStatement.%Execute(tValues.GetAt(1), tValues.GetAt(2), tValues.GetAt(3), tValues.GetAt(4), tValues.GetAt(5))
+            } ElseIf tParamCount = 6 {
+                Set tResult = tStatement.%Execute(tValues.GetAt(1), tValues.GetAt(2), tValues.GetAt(3), tValues.GetAt(4), tValues.GetAt(5), tValues.GetAt(6))
+            } ElseIf tParamCount = 7 {
+                Set tResult = tStatement.%Execute(tValues.GetAt(1), tValues.GetAt(2), tValues.GetAt(3), tValues.GetAt(4), tValues.GetAt(5), tValues.GetAt(6), tValues.GetAt(7))
             } Else {
                 // Support up to 10 parameters
                 Set tResult = tStatement.%Execute(tValues.GetAt(1), tValues.GetAt(2), tValues.GetAt(3), tValues.GetAt(4), tValues.GetAt(5), tValues.GetAt(6), tValues.GetAt(7), tValues.GetAt(8), tValues.GetAt(9), tValues.GetAt(10))
             }
             
+            Set ^ClineDebug = ^ClineDebug _ "Execute SQLCODE=" _ tResult.%SQLCODE _ "; "
+            
+            // Check INSERT succeeded
             If tResult.%SQLCODE = 0 {
+                // With Dynamic SQL, the %ROWID is available as an object property
                 Set tId = tResult.%ROWID
+                Set ^ClineDebug = ^ClineDebug _ "Got ID=" _ tId _ " from result.%ROWID; "
+            } Else {
+                Set ^ClineDebug = ^ClineDebug _ "INSERT FAILED: " _ tResult.%Message _ "; "
             }
         }
     } Catch ex {
         Do ..LogError("Insert", ex)
         Set tId = ""
+        Set ^ClineDebug = ^ClineDebug _ "EXCEPTION: " _ ex.DisplayString() _ "; "
     }
     
+    Set ^ClineDebug = ^ClineDebug _ "Insert END tId=" _ tId _ "; "
     Quit tId
 }
 
 /// Update existing record
 /// @param pId ID of the record to update
-/// @param pData %DynamicObject containing field names and new values
+/// @param pData %DynamicObject or JSON string containing field names and new values
 /// @return %Status indicating success or failure
-ClassMethod Update(pId As %String, pData As %DynamicObject) As %Status
+ClassMethod Update(pId As %String, pData) As %Status
 {
     Set tSC = $$$OK
     
     Try {
+        // Convert JSON string to %DynamicObject if needed
+        Set tDataObj = pData
+        If '$IsObject(pData) {
+            // pData is a JSON string, parse it
+            Set tDataObj = ##class(%DynamicObject).%FromJSON(pData)
+        }
+        
+        // Validate we now have an object
+        If '$IsObject(tDataObj) {
+            Set tSC = $$$ERROR($$$GeneralError, "Invalid pData parameter")
+            Quit
+        }
+        
         // Build SET clause
         Set tSetClause = ""
         Set tValues = ##class(%ListOfDataTypes).%New()
         
-        Set tIterator = pData.%GetIterator()
+        Set tIterator = tDataObj.%GetIterator()
         While tIterator.%GetNext(.tKey, .tValue) {
             If tSetClause '= "" {
                 Set tSetClause = tSetClause _ ", "

@@ -5,8 +5,8 @@ Class Patterns.Test.Unit.PoEAA.DataSource.TableDataGatewayTest Extends %UnitTest
 /// Clear test data before each test
 Method OnBeforeOneTest() As %Status
 {
-    // Clear any existing test patients
-    &sql(DELETE FROM Patterns_Examples_Clinical.Patient)
+    // Clear any existing test patients using %KillExtent for thorough cleanup
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
     
     // Clear debug global
     Set ^ClineDebug = ""
@@ -17,8 +17,8 @@ Method OnBeforeOneTest() As %Status
 /// Clean up after each test
 Method OnAfterOneTest() As %Status
 {
-    // Clear test data
-    &sql(DELETE FROM Patterns_Examples_Clinical.Patient)
+    // Clear test data using %KillExtent for thorough cleanup
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
     
     Quit $$$OK
 }
@@ -26,11 +26,13 @@ Method OnAfterOneTest() As %Status
 /// Test FindAll returns all records
 Method TestFindAllReturnsAllRecords() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange - Insert test patients
     Set tPatient1 = {
         "FirstName": "John",
         "LastName": "Smith",
-        "DateOfBirth": "1990-01-15",
         "Gender": "M",
         "Department": "Cardiology",
         "Status": "Active",
@@ -39,7 +41,6 @@ Method TestFindAllReturnsAllRecords() As %Status
     Set tPatient2 = {
         "FirstName": "Jane",
         "LastName": "Doe",
-        "DateOfBirth": "1985-05-20",
         "Gender": "F",
         "Department": "Neurology",
         "Status": "Active",
@@ -61,6 +62,9 @@ Method TestFindAllReturnsAllRecords() As %Status
 /// Test FindAll returns empty list for empty table
 Method TestFindAllReturnsEmptyListForEmptyTable() As %Status
 {
+    // Explicit cleanup to ensure empty table
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Act
     Set tResults = ##class(Patterns.Examples.Clinical.PatientDataGateway).FindAllPatients()
     
@@ -77,7 +81,6 @@ Method TestFindByIdReturnsCorrectRecord() As %Status
     Set tPatient = {
         "FirstName": "John",
         "LastName": "Smith",
-        "DateOfBirth": "1990-01-15",
         "Gender": "M",
         "Department": "Cardiology",
         "Status": "Active",
@@ -116,7 +119,6 @@ Method TestInsertCreatesNewRecordAndReturnsId() As %Status
     Set tPatient = {
         "FirstName": "Alice",
         "LastName": "Johnson",
-        "DateOfBirth": "1992-03-10",
         "Gender": "F",
         "Department": "Oncology",
         "Status": "Active",
@@ -144,7 +146,6 @@ Method TestUpdateModifiesExistingRecord() As %Status
     Set tPatient = {
         "FirstName": "Bob",
         "LastName": "Williams",
-        "DateOfBirth": "1988-07-25",
         "Gender": "M",
         "Department": "Orthopedics",
         "Status": "Active",
@@ -178,7 +179,6 @@ Method TestDeleteRemovesRecord() As %Status
     Set tPatient = {
         "FirstName": "Charlie",
         "LastName": "Brown",
-        "DateOfBirth": "1995-11-30",
         "Gender": "M",
         "Department": "Pediatrics",
         "Status": "Active",
@@ -206,11 +206,13 @@ Method TestDeleteRemovesRecord() As %Status
 /// Test FindPatientsByLastName returns matching records
 Method TestFindPatientsByLastNameReturnsMatches() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange - Insert patients with same last name
     Set tPatient1 = {
         "FirstName": "John",
         "LastName": "Smith",
-        "DateOfBirth": "1990-01-15",
         "Gender": "M",
         "Department": "Cardiology",
         "Status": "Active",
@@ -219,7 +221,6 @@ Method TestFindPatientsByLastNameReturnsMatches() As %Status
     Set tPatient2 = {
         "FirstName": "Jane",
         "LastName": "Smith",
-        "DateOfBirth": "1992-03-20",
         "Gender": "F",
         "Department": "Neurology",
         "Status": "Active",
@@ -228,7 +229,6 @@ Method TestFindPatientsByLastNameReturnsMatches() As %Status
     Set tPatient3 = {
         "FirstName": "Bob",
         "LastName": "Jones",
-        "DateOfBirth": "1985-05-10",
         "Gender": "M",
         "Department": "Cardiology",
         "Status": "Active",
@@ -251,11 +251,13 @@ Method TestFindPatientsByLastNameReturnsMatches() As %Status
 /// Test FindPatientsByDepartment returns matching records
 Method TestFindPatientsByDepartmentReturnsMatches() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange
     Set tPatient1 = {
         "FirstName": "Alice",
         "LastName": "Cooper",
-        "DateOfBirth": "1987-08-12",
         "Gender": "F",
         "Department": "Cardiology",
         "Status": "Active",
@@ -264,7 +266,6 @@ Method TestFindPatientsByDepartmentReturnsMatches() As %Status
     Set tPatient2 = {
         "FirstName": "David",
         "LastName": "Lee",
-        "DateOfBirth": "1993-02-28",
         "Gender": "M",
         "Department": "Cardiology",
         "Status": "Active",
@@ -290,7 +291,6 @@ Method TestFindPatientByMRNReturnsCorrectPatient() As %Status
     Set tPatient = {
         "FirstName": "Emily",
         "LastName": "Davis",
-        "DateOfBirth": "1991-06-18",
         "Gender": "F",
         "Department": "Radiology",
         "Status": "Active",
@@ -312,6 +312,9 @@ Method TestFindPatientByMRNReturnsCorrectPatient() As %Status
 /// Test GetPatientCount returns correct count
 Method TestGetPatientCountReturnsCorrectCount() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange - Insert 3 patients
     Set tPatient1 = {"FirstName": "P1", "LastName": "L1", "MRN": "MRN012", "Status": "Active", "Department": "D1"}
     Set tPatient2 = {"FirstName": "P2", "LastName": "L2", "MRN": "MRN013", "Status": "Active", "Department": "D1"}
@@ -333,6 +336,9 @@ Method TestGetPatientCountReturnsCorrectCount() As %Status
 /// Test GetPatientCountByDepartment returns correct count
 Method TestGetPatientCountByDepartmentReturnsCorrectCount() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange - Insert patients in different departments
     Set tPatient1 = {"FirstName": "P1", "LastName": "L1", "MRN": "MRN015", "Status": "Active", "Department": "Cardiology"}
     Set tPatient2 = {"FirstName": "P2", "LastName": "L2", "MRN": "MRN016", "Status": "Active", "Department": "Cardiology"}
@@ -354,6 +360,9 @@ Method TestGetPatientCountByDepartmentReturnsCorrectCount() As %Status
 /// Test GetPatientCountByStatus returns correct count
 Method TestGetPatientCountByStatusReturnsCorrectCount() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange
     Set tPatient1 = {"FirstName": "P1", "LastName": "L1", "MRN": "MRN018", "Status": "Active", "Department": "D1"}
     Set tPatient2 = {"FirstName": "P2", "LastName": "L2", "MRN": "MRN019", "Status": "Discharged", "Department": "D1"}
@@ -396,7 +405,6 @@ Method TestResultSetToObjectMappingAccuracy() As %Status
     Set tPatient = {
         "FirstName": "TestFirst",
         "LastName": "TestLast",
-        "DateOfBirth": "1990-05-15",
         "Gender": "F",
         "Department": "TestDept",
         "Status": "Active",
@@ -422,6 +430,9 @@ Method TestResultSetToObjectMappingAccuracy() As %Status
 /// Test FindPatientsByStatus returns correct results
 Method TestFindPatientsByStatusReturnsCorrectResults() As %Status
 {
+    // Explicit cleanup to ensure clean state
+    Do ##class(Patterns.Examples.Clinical.Patient).%KillExtent()
+    
     // Arrange
     Set tPatient1 = {"FirstName": "Active1", "LastName": "Test", "MRN": "MRN023", "Status": "Active", "Department": "D1"}
     Set tPatient2 = {"FirstName": "Discharged1", "LastName": "Test", "MRN": "MRN024", "Status": "Discharged", "Department": "D1"}

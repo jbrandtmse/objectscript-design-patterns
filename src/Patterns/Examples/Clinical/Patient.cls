@@ -60,11 +60,11 @@ Storage Default
 <Value>MRN</Value>
 </Value>
 </Data>
-<DataLocation>^Patterns.Examples.C79E1.PatientD</DataLocation>
+<DataLocation>^Patterns.Examples65F7.PatientD</DataLocation>
 <DefaultData>PatientDefaultData</DefaultData>
-<IdLocation>^Patterns.Examples.C79E1.PatientD</IdLocation>
-<IndexLocation>^Patterns.Examples.C79E1.PatientI</IndexLocation>
-<StreamLocation>^Patterns.Examples.C79E1.PatientS</StreamLocation>
+<IdLocation>^Patterns.Examples65F7.PatientD</IdLocation>
+<IndexLocation>^Patterns.Examples65F7.PatientI</IndexLocation>
+<StreamLocation>^Patterns.Examples65F7.PatientS</StreamLocation>
 <Type>%Storage.Persistent</Type>
 }
 
