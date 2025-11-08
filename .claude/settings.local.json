@@ -3,9 +3,12 @@
     "allow": [
       "Bash(echo $env:APPDATA)",
       "Bash(mkdir:*)",
-      "Bash(git add:*)"
+      "Bash(git add:*)",
+      "Bash(powershell -Command \"echo $env:APPDATA\")"
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enableAllProjectMcpServers": true,
+  "enabledMcpjsonServers": ["perplexity-mcp", "iris-execute-mcp"]
 }
